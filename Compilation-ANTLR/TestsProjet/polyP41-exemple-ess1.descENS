@@ -1,0 +1,16 @@
+FICHIER polyP42-exemple-ess1.desc :
+
+unite          programme
+tailleCode     62
+tailleGlobaux  1
+nbDef          0
+nbRef          6
+nbTransExt     6
+tabDef          
+tabRef          
+    init1  0
+    init2  0
+    ajout1  1
+    ajout2  1
+    ecr1  0
+    ecr2  0

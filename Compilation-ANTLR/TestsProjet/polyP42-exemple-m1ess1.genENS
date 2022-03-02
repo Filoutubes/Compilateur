@@ -1,0 +1,46 @@
+FICHIER polyP43-exemple-m1ess1.gen : 
+
+   1  empiler         0
+   3  affecterg       0
+   5  retour          0
+   7  contenug        0
+   9  empiler         0
+  11  eg        
+  12  bsifaux        26
+  14  contenul        0   0
+  17  affecterg       1
+  19  contenul        0   0
+  22  affecterg       2
+  24  bincond        54
+  26  contenul        0   0
+  29  contenug        1
+  31  inf       
+  32  bsifaux        41
+  34  contenul        0   0
+  37  affecterg       1
+  39  bincond        54
+  41  contenul        0   0
+  44  contenug        2
+  46  sup       
+  47  bsifaux        54
+  49  contenul        0   0
+  52  affecterg       2
+  54  contenug        0
+  56  empiler         1
+  58  add       
+  59  affecterg       0
+  61  retour          1
+  63  contenug        0
+  65  empiler         0
+  67  diff      
+  68  bsifaux        81
+  70  contenug        0
+  72  ecrent    
+  73  contenug        1
+  75  ecrent    
+  76  contenug        2
+  78  ecrent    
+  79  bincond        84
+  81  empiler         0
+  83  ecrent    
+  84  retour          0

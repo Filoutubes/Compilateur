@@ -1,0 +1,13 @@
+FICHIER polyP43-exemple-m1ess1.desc :
+
+unite          module
+tailleCode     85
+tailleGlobaux  3
+nbDef          3
+nbRef          0
+nbTransExt     21
+tabDef          
+    init1  1  0
+    ajout1  7  1
+    ecr1  63  0
+tabRef          

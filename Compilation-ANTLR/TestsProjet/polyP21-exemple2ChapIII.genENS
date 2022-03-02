@@ -1,0 +1,26 @@
+FICHIER polyP21-exemple2ChapIII.gen : 
+
+   1  reserver        1
+   3  bincond        50
+   5  reserver        1
+   7  empiler         0
+   9  affecterl       4   0
+  12  contenul        0   0
+  15  affecterl       1   1
+  18  retour          2
+  20  reserver        1
+  22  empiler         2
+  24  empileradl      3   0
+  27  appel           5   2
+  30  contenul        3   0
+  33  empileradl      0   1
+  36  appel           5   2
+  39  contenul        0   1
+  42  empileradl      3   0
+  45  appel           5   2
+  48  retour          1
+  50  empileradg      0
+  52  appel          20   1
+  55  contenug        0
+  57  ecrent    
+  58  arret     
