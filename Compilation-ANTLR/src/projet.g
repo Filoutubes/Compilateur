@@ -34,8 +34,8 @@ import java.io.FileInputStream;
 catch (RecognitionException e) {reportError (e) ; throw e ; }}
 
 
-unite  :   unitprog {PtGen.pt(255);} EOF
-      |    unitmodule {PtGen.pt(255);} EOF
+unite  :   unitprog  EOF
+      |    unitmodule  EOF
   ;
   
 unitprog
@@ -70,8 +70,8 @@ consts  : 'const' ( ident  '=' valeur  ptvg  )+
 vars  : 'var' ( type ident  ( ','  ident  )* ptvg  )+
   ;
   
-type  : 'ent' {PtGen.pt(13);} 
-  |     'bool' {PtGen.pt(
+type  : 'ent'  
+  |     'bool' 
   ;
   
 decprocs: (decproc ptvg)+
@@ -181,10 +181,10 @@ primaire: valeur
   ;
   
 valeur  : nbentier 
-  | '+' nbentier {PtGen.pt(3);}
-  | '-' nbentier {PtGen.pt(4);}
-  | 'vrai' {PtGen.pt(5);}
-  | 'faux' {PtGen.pt(6);}
+  | '+' nbentier 
+  | '-' nbentier 
+  | 'vrai' 
+  | 'faux' 
   ;
 
 // partie lexicale  : cette partie ne doit pas etre modifiee  //
