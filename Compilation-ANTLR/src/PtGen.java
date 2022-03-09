@@ -122,7 +122,9 @@ public class PtGen {
 
 	private static int tCour; // type de l'expression compilee
 	private static int vCour; // sert uniquement lors de la compilation d'une valeur (entiere ou boolenne)
-
+	private static int adVar; // adresse de la variable
+	
+	private static int typeVarLue, iVarLue;
 
 	// TABLE DES SYMBOLES
 	// ------------------
@@ -210,6 +212,8 @@ public class PtGen {
 
 		// initialisation du type de l'expression courante
 		tCour = NEUTRE;
+		
+		adVar = 0; // mise à 0 de l'adresse courante dans la table des symboles
 
 	} // initialisations
 
@@ -226,20 +230,25 @@ public class PtGen {
 			break;
 
 		case 255 : 
+			po.produire(ARRET);
+			desc.setTailleCode(po.getIpo());
 			afftabSymb(); // affichage de la table des symboles en fin de compilation
+			
+			//on crée les fichiers obj, gen et desc
 			po.constObj();
 			po.constGen();
+			desc.ecrireDesc(UtilLex.nomSource);
 			break;
 
 			// TODO
-		case 1: // id/code lu
+		case 1: 
 			break;
 		case 2: // constante
 			if(presentIdent(1) == 0) {
 				placeIdent(UtilLex.numIdCourant, CONSTANTE, tCour, vCour);
 			}
 			else {
-				UtilLex.messErr("Constante déja déclarée");
+				UtilLex.messErr("Constante déja déclarée.");
 			}
 			break;
 		case 3: // lecture entier positif
@@ -258,30 +267,31 @@ public class PtGen {
 				tCour = BOOL;
 				vCour = FAUX;
 				break;
-		case 7: // déclaration d'un entier
+		case 7: // on a lu un ident de variable
 				if(presentIdent(1) == 0) {
-					tCour = ENT;
-					placeIdent(UtilLex.numIdCourant, VARGLOBALE, tCour, vCour);
+					placeIdent(UtilLex.numIdCourant, VARGLOBALE, tCour, adVar);
+					adVar++;
 				}
 				else {
-					UtilLex.messErr("Variable déja déclarée");
-				}
-				break;
-		case 8: // déclaration d'un booléen
-				if(presentIdent(1) == 0) {
-					tCour = ENT;
-					placeIdent(UtilLex.numIdCourant, VARGLOBALE, tCour, vCour);
-				}
-				else {
-					UtilLex.messErr("Variable déja déclarée");
+					UtilLex.messErr("Variable déja déclarée.");
 				}
 				break;
 				
 		// traitement des expressions
 				
 		// PARTIE BOOLÉENS
-		case 9: 
+		case 8: // après lecture d'une expression (boucle/si/switch)
 				verifBool();
+				po.produire(BSIFAUX);
+				
+				//on ne connaît pas la valeur de l'ipo du branchement pour le moment, on produit -1
+				po.produire(-1);
+				
+				// on empile l'ipo actuel (valeur du bsifaux) dans la pile des reprises, pour pouvoir le modifier par la suite
+				pileRep.empiler(po.getIpo());
+				break;
+		case 9: //lecture d'une déclaration d'un booléen
+				tCour = BOOL;
 				break;
 		case 10:
 				po.produire(ET);
@@ -292,43 +302,177 @@ public class PtGen {
 		case 12:
 				po.produire(NON);
 				break;
-		
-		// PARTIE ENTIERS
 		case 13:
-				verifEnt();
+				verifBool();
 				break;
-		case 14:
-				po.produire(DIFF);
+		
+				// PARTIE ENTIERS
+		case 14: //lecture d'une déclaration d'un entier
+				tCour = ENT;
 				break;
 		case 15:
-				po.produire(EG);
+				po.produire(DIFF);
+				tCour = BOOL;
 				break;
 		case 16:
-				po.produire(INF);
+				po.produire(EG);
+				tCour = BOOL;
 				break;
 		case 17:
-				po.produire(SUP);
+				po.produire(INF);
+				tCour = BOOL;
 				break;
 		case 18:
-				po.produire(INFEG);
+				po.produire(SUP);
+				tCour = BOOL;
 				break;
 		case 19:
-				po.produire(SUPEG);
+				po.produire(INFEG);
+				tCour = BOOL;
 				break;
 		case 20:
-				po.produire(ADD);
+				po.produire(SUPEG);
+				tCour = BOOL;
 				break;
 		case 21:
-				po.produire(SOUS);
+				po.produire(ADD);
 				break;
 		case 22:
-				po.produire(DIV);
+				po.produire(SOUS);
 				break;
 		case 23:
-				po.produire(MUL);
+				po.produire(DIV);
 				break;
 		case 24:
-				po.produire(EMPILER); // on empile une value de type int/long
+				po.produire(MUL);
+				break;
+		case 25:
+				verifEnt();
+				break;
+		case 26: // TODO
+				break;
+		case 27:
+				po.produire(EMPILER); // on empile une value de type int/long (un bool est représenté par les entiers 1/0)
+				po.produire(vCour);
+				break;
+		case 28: // lecture
+				if(presentIdent(1) == 0) {
+					UtilLex.messErr("Ident non reconnu.");
+				}
+				else {
+					EltTabSymb symb = tabSymb[presentIdent(1)];
+					if(symb.type == BOOL) {
+						po.produire(LIREBOOL);
+					}
+					else if(symb.type == ENT) {
+						po.produire(LIRENT);
+					}
+					else {
+						//NEUTRE
+						UtilLex.messErr("Erreur: type non reconnu.");
+					}
+					po.produire(AFFECTERG);
+					po.produire(symb.info);
+				}
+				break;
+		case 29: // écriture
+				if(presentIdent(1) == 0) {
+					UtilLex.messErr("Ident non reconnu.");
+				}
+				else {
+					EltTabSymb symb = tabSymb[presentIdent(1)];
+					if(symb.type == BOOL) {
+						po.produire(ECRBOOL);
+					}
+					else if(symb.type == ENT) {
+						po.produire(ECRENT);
+					}
+					else {
+						//NEUTRE
+						UtilLex.messErr("Erreur: type non reconnu.");
+					}
+				}
+				break;
+		case 30: // réserver
+				po.produire(RESERVER);
+				po.produire(adVar);
+				desc.setTailleGlobaux(adVar);
+				break;
+		case 31: // lecture d'un ident
+			// on doit sauvegarder le type courant et l'index courant dans la table des symboles, de la variable à lire
+			if(presentIdent(1) == 0) {
+				UtilLex.messErr("Ident non reconnu.");
+			}
+			else {
+				iVarLue = presentIdent(1);
+				if(tabSymb[iVarLue].categorie == CONSTANTE) { // on EMPILE une constante, on ne la lit pas
+					UtilLex.messErr("L'ident n'est pas une variable.");
+					break; // return early
+				}
+				tCour = tabSymb[iVarLue].type;
+				vCour = tabSymb[iVarLue].info;
+				typeVarLue = tabSymb[iVarLue].type;
+			}
+			break;
+		case 32: // affectation (affecterg)
+				// il nous faut réutiliser iVarLue et typeVarlue et vérifier que les types concordent!
+				if(typeVarLue == BOOL) {
+					verifBool(); // on vérifie que tCour == BOOL pour que la réaffectation puisse se faire
+				}
+				else if(typeVarLue == ENT) {
+					verifEnt(); // on vérifie que tCour == ENT pour que la réaffectation puisse se faire
+				}
+				else {
+					// Neutre
+					UtilLex.messErr("Type inconnu.");
+				}
+				po.produire(AFFECTERG);
+				po.produire(tabSymb[iVarLue].info);
+				break;
+		case 33: // on doit évaluer un ident et pouvoir le retrouver dans la table des ident
+				if(presentIdent(1) == 0) {
+					UtilLex.messErr("Ident inconnu ou non déclaré.");
+					break; // return early
+				}
+				else {
+					tCour = tabSymb[presentIdent(1)].type;
+					vCour = tabSymb[presentIdent(1)].info;
+					if(tabSymb[presentIdent(1)].categorie == VARGLOBALE) {
+						po.produire(CONTENUG);
+						po.produire(vCour);
+					}
+					else if(tabSymb[presentIdent(1)].categorie == CONSTANTE) {
+						po.produire(EMPILER);
+						po.produire(vCour);
+					}
+					else {
+						UtilLex.messErr("Type inconnu.");
+					}
+				}
+				break;
+		case 34: // traitement du else
+				int bsifaux = pileRep.depiler(); // on dépile l'ipo de la valeur du bsifaux
+				
+				po.produire(BINCOND);
+				//on ne connaît pas la valeur de l'ipo du branchement pour le moment, on stocke -1 dans la pile
+				po.produire(-1);
+				// on empile l'ipo actuel dans la pile des reprises, pour pouvoir le modifier par la suite
+				pileRep.empiler(po.getIpo());
+				
+				po.modifier(bsifaux, po.getIpo()+1); // on remplace le -1 par ipo+1 pour passer à la ligne après le bincond
+				break;
+		case 35: // traitement du FSI
+				int bincondOuBsifaux = pileRep.depiler(); // on dépile soit le dernier bincond soit le dernier bsifaux
+				po.modifier(bincondOuBsifaux, po.getIpo()+1); // on modifie la valeur -1, qui était après le bincond/bsifaux, par l'ipo de la ligne suivante
+				break;
+		case 36: // fin tt que
+				int bsifaux2 = pileRep.depiler(); // on récupère l'ipo de la valeur du BSIFAUX
+				po.produire(BINCOND);
+				po.produire(bsifaux2 - 1);
+				po.modifier(bsifaux2, po.getIpo()+1); // on remplace le -1 par ipo+1 pour passer à la ligne après le bincond si la cond n'est pas valide
+				break;
+		case 37: // préparation du premier bincond
+				
 				break;
 		default:
 			System.out.println("Point de generation non prévu dans votre liste");

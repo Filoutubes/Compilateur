@@ -1,0 +1,27 @@
+FICHIER TestsProjet/polyP29-exo1.gen : 
+
+   1  reserver        4
+   3  lirent    
+   4  affecterg       0
+   6  empiler         0
+   8  affecterg       1
+  10  empiler         1
+  12  affecterg       2
+  14  contenug        2
+  16  contenug        0
+  18  infeg     
+  19  bsifaux        40
+  21  lirent    
+  22  affecterg       3
+  24  contenug        1
+  26  contenug        3
+  28  add       
+  29  affecterg       1
+  31  contenug        2
+  33  empiler         1
+  35  add       
+  36  affecterg       2
+  38  bincond        19
+  40  contenug        1
+  42  ecrent    
+  43  arret     

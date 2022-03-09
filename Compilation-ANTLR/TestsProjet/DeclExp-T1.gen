@@ -1,2 +1,45 @@
 FICHIER TestsProjet/DeclExp-T1.gen : 
 
+   1  reserver        5
+   3  empiler        77
+   5  empiler         7
+   7  sous      
+   8  empiler         2
+  10  div       
+  11  affecterg       0
+  13  empiler         1
+  15  empiler         0
+  17  et        
+  18  affecterg       2
+  20  contenug        2
+  22  non       
+  23  empiler         1
+  25  empiler         0
+  27  ou        
+  28  et        
+  29  affecterg       3
+  31  contenug        0
+  33  empiler         5
+  35  add       
+  36  empiler        10
+  38  mul       
+  39  affecterg       1
+  41  contenug        0
+  43  contenug        1
+  45  infeg     
+  46  contenug        0
+  48  empiler        10
+  50  diff      
+  51  ou        
+  52  affecterg       4
+  54  contenug        0
+  56  ecrent    
+  57  contenug        1
+  59  ecrent    
+  60  contenug        2
+  62  ecrbool   
+  63  contenug        3
+  65  ecrbool   
+  66  contenug        4
+  68  ecrbool   
+  69  arret     

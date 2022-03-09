@@ -7,6 +7,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="classes/2022-libClass_Projet"/>
-	<classpathentry kind="lib" path="C:/Users/bahdo/Documents/eclipse-workspace/eclipse-workspaceCMPL/Compilation-ANTLR/antlr-3.5.2-complete.jar"/>
+	<classpathentry kind="lib" path="C:/Users/bahdo/git/Compilateur/Compilation-ANTLR/antlr-3.5.2-complete.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

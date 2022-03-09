@@ -34,8 +34,8 @@ import java.io.FileInputStream;
 catch (RecognitionException e) {reportError (e) ; throw e ; }}
 
 
-unite  :   unitprog  EOF
-      |    unitmodule  EOF
+unite  :   unitprog {PtGen.pt(255);} EOF
+      |    unitmodule {PtGen.pt(255);} EOF
   ;
   
 unitprog
@@ -64,14 +64,14 @@ specif  : ident  ( 'fixe' '(' type  ( ',' type  )* ')' )?
                  ( 'mod'  '(' type  ( ',' type  )* ')' )? 
   ;
   
-consts  : 'const' ( ident  '=' valeur  ptvg  )+ 
+consts  : 'const' ( ident  '=' valeur {PtGen.pt(2);} ptvg  )+ 
   ;
   
-vars  : 'var' ( type ident  ( ','  ident  )* ptvg  )+
+vars  : 'var' ( type ident {PtGen.pt(7);} ( ','  ident {PtGen.pt(7);} )* ptvg  )+ {PtGen.pt(30);}
   ;
   
-type  : 'ent'  
-  |     'bool' 
+type  : 'ent' {PtGen.pt(14);} 
+  |     'bool' {PtGen.pt(9);}
   ;
   
 decprocs: (decproc ptvg)+
@@ -113,26 +113,26 @@ instruction
   |
   ;
   
-inssi : 'si' expression 'alors' instructions ('sinon'  instructions)? 'fsi' 
+inssi : 'si' expression {PtGen.pt(8);} 'alors' instructions ('sinon' {PtGen.pt(34);} instructions )? {PtGen.pt(35);} 'fsi' 
   ;
   
-inscond : 'cond'  expression  ':' instructions 
-          (','  expression  ':' instructions )* 
+inscond : 'cond' {PtGen.pt(37);} expression {PtGen.pt(8);} ':' instructions 
+          (','  expression {PtGen.pt(8);} ':' instructions )* 
           ('aut'  instructions |  ) 
           'fcond' 
   ;
   
-boucle  : 'ttq'  expression 'faire' instructions 'fait' 
+boucle  : 'ttq'  expression {PtGen.pt(8);} 'faire' instructions {PtGen.pt(36);} 'fait' 
   ;
   
-lecture: 'lire' '(' ident  ( ',' ident  )* ')' 
+lecture: 'lire' '(' ident {PtGen.pt(28);} ( ',' ident {PtGen.pt(28);} )* ')' 
   ;
   
-ecriture: 'ecrire' '(' expression  ( ',' expression  )* ')'
+ecriture: 'ecrire' '(' expression {PtGen.pt(29);} ( ',' expression {PtGen.pt(29);} )* ')'
    ;
   
 affouappel
-  : ident  (    ':=' expression 
+  : ident  ( {PtGen.pt(31);}   ':=' expression {PtGen.pt(32);}
             |   (effixes (effmods)?)?  
            )
   ;
@@ -143,48 +143,48 @@ effixes : '(' (expression  (',' expression  )*)? ')'
 effmods :'(' (ident  (',' ident  )*)? ')'
   ; 
   
-expression: (exp1) ('ou'  exp1  )*
+expression: (exp1) ('ou' {PtGen.pt(13);} exp1 {PtGen.pt(13);} {PtGen.pt(11);} )*
   ;
   
-exp1  : exp2 ('et'  exp2  )*
+exp1  : exp2 ('et' {PtGen.pt(13);} exp2 {PtGen.pt(13);} {PtGen.pt(10);} )*
   ;
   
-exp2  : 'non' exp2 
+exp2  : 'non' exp2 {PtGen.pt(13);} {PtGen.pt(12);}
   | exp3  
   ;
   
 exp3  : exp4 
-  ( '='   exp4 
-  | '<>'  exp4 
-  | '>'   exp4 
-  | '>='  exp4 
-  | '<'   exp4 
-  | '<='  exp4  
+  ( '=' {PtGen.pt(25);}  exp4 {PtGen.pt(25);} {PtGen.pt(16);}
+  | '<>' {PtGen.pt(25);}  exp4 {PtGen.pt(25);} {PtGen.pt(15);}
+  | '>' {PtGen.pt(25);}  exp4 {PtGen.pt(25);} {PtGen.pt(18);}
+  | '>=' {PtGen.pt(25);} exp4 {PtGen.pt(25);} {PtGen.pt(20);}
+  | '<' {PtGen.pt(25);}  exp4 {PtGen.pt(25);} {PtGen.pt(17);}
+  | '<=' {PtGen.pt(25);} exp4  {PtGen.pt(25);} {PtGen.pt(19);}
   ) ?
   ;
   
 exp4  : exp5 
-        ('+'  exp5 
-        |'-'  exp5 
+        ('+' {PtGen.pt(25);} exp5 {PtGen.pt(25);} {PtGen.pt(21);}
+        |'-' {PtGen.pt(25);} exp5 {PtGen.pt(25);} {PtGen.pt(22);}
         )*
   ;
   
 exp5  : primaire 
-        (    '*'   primaire 
-          | 'div'  primaire 
+        (    '*' {PtGen.pt(25);}  primaire {PtGen.pt(25);} {PtGen.pt(24);}
+          | 'div' {PtGen.pt(25);} primaire {PtGen.pt(25);} {PtGen.pt(23);}
         )*
   ;
   
-primaire: valeur 
-  | ident  
+primaire: valeur {PtGen.pt(27);}
+  | ident {PtGen.pt(33);}
   | '(' expression ')'
   ;
   
-valeur  : nbentier 
-  | '+' nbentier 
-  | '-' nbentier 
-  | 'vrai' 
-  | 'faux' 
+valeur  : nbentier {PtGen.pt(3);}
+  | '+' nbentier {PtGen.pt(3);}
+  | '-' nbentier {PtGen.pt(4);}
+  | 'vrai' {PtGen.pt(5);}
+  | 'faux' {PtGen.pt(6);}
   ;
 
 // partie lexicale  : cette partie ne doit pas etre modifiee  //
