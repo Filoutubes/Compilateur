@@ -117,7 +117,7 @@ inssi : 'si' expression {PtGen.pt(8);} 'alors' instructions ('sinon' {PtGen.pt(3
   ;
   
 inscond : 'cond' {PtGen.pt(37);} expression {PtGen.pt(8);} ':' instructions 
-          (','  expression {PtGen.pt(8);} ':' instructions )* 
+          (',' {PtGen.pt(38);} expression {PtGen.pt(8);} ':' instructions )* 
           ('aut'  instructions |  ) 
           'fcond' 
   ;

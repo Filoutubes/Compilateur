@@ -472,6 +472,11 @@ public class PtGen {
 				po.modifier(bsifaux2, po.getIpo()+1); // on remplace le -1 par ipo+1 pour passer à la ligne après le bincond si la cond n'est pas valide
 				break;
 		case 37: // préparation du premier bincond
+				po.produire(BINCOND);
+				po.produire(0);
+				pileRep.empiler(po.getIpo());
+				break;
+		case 38: // chaînage des bincond
 				
 				break;
 		default:
