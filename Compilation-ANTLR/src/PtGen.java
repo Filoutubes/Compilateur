@@ -480,7 +480,7 @@ public class PtGen {
 				
 				break;
 		default:
-			System.out.println("Point de generation non prévu dans votre liste");
+			System.out.println("Point de generation non prévu dans votre liste");;
 			break;
 
 		}
