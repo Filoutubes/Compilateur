@@ -124,7 +124,8 @@ public class PtGen {
 	private static int vCour; // sert uniquement lors de la compilation d'une valeur (entiere ou boolenne)
 	private static int adVar; // adresse de la variable
 	
-	private static int typeVarLue, iVarLue;
+	private static int typeVarLue, iVarLue; // type et valeur de la variable/constante lue
+	private static int nbParams; // nombre de paramètres d'une fonction
 
 	// TABLE DES SYMBOLES
 	// ------------------
@@ -376,22 +377,16 @@ public class PtGen {
 				}
 				break;
 		case 29: // écriture
-				if(presentIdent(1) == 0) {
-					UtilLex.messErr("Ident non reconnu.");
-				}
-				else {
-					EltTabSymb symb = tabSymb[presentIdent(1)];
-					if(symb.type == BOOL) {
+					if(tCour == BOOL) {
 						po.produire(ECRBOOL);
 					}
-					else if(symb.type == ENT) {
+					else if(tCour == ENT) {
 						po.produire(ECRENT);
 					}
 					else {
 						//NEUTRE
 						UtilLex.messErr("Erreur: type non reconnu.");
 					}
-				}
 				break;
 		case 30: // réserver
 				po.produire(RESERVER);
@@ -467,18 +462,61 @@ public class PtGen {
 				break;
 		case 36: // fin tt que
 				int bsifaux2 = pileRep.depiler(); // on récupère l'ipo de la valeur du BSIFAUX
+				int ipoBoucle = pileRep.depiler(); // on récupère l'ipo du début de l'expression du tt que
 				po.produire(BINCOND);
-				po.produire(bsifaux2 - 1);
+				po.produire(ipoBoucle);
+				//po.produire(bsifaux2 - 1);
 				po.modifier(bsifaux2, po.getIpo()+1); // on remplace le -1 par ipo+1 pour passer à la ligne après le bincond si la cond n'est pas valide
 				break;
+		//COND
 		case 37: // préparation du premier bincond
+				pileRep.empiler(0);
+				break;
+		case 38: // on sauvegarde le bincond dans la pile des reprises et on dépile le bsifaux
+				int ipoBsifaux = pileRep.depiler();
 				po.produire(BINCOND);
-				po.produire(0);
+				po.produire(pileRep.depiler()); // on dépile le bincond
+				po.modifier(ipoBsifaux, po.getIpo()+1); // si on exécute pas le corps de l'instruction, on évalue la prochaine cond
+				pileRep.empiler(po.getIpo());
+			break;
+		case 39: // on remonte la chaîne
+				int last_bsifaux = pileRep.depiler(); // on dépile le dernier bsifaux (on a su qu'il y en avait un car il restait un dernier bsifaux non modifié: d'où l'error "out of bounds, index -1")
+				int ipoValeurBinC = pileRep.depiler(); // dernier bincond de la chaîne
+				int valeurNextBinC = po.getElt(ipoValeurBinC);
+				po.modifier(last_bsifaux, po.getIpo()+1); // si on exécute pas le corps de la dernière instruction (cond), on jump directement vers le dernier bincond (la fin du switch)
+				while(valeurNextBinC != 0) {
+					po.modifier(ipoValeurBinC, po.getIpo()+1);
+					ipoValeurBinC = valeurNextBinC;
+					valeurNextBinC = po.getElt(ipoValeurBinC);
+				}
+				// on doit modifier la valeur du dernier bincond (bincond 0) aussi
+				po.modifier(ipoValeurBinC, po.getIpo()+1);
+				break;
+		case 40: // on exécute l'instruction autre
+				int last_bsifaux1 = pileRep.depiler(); // on dépile le "dernier" bsifaux (il nous faudra remonter les autres ensuite) et on produit bincond 0
+				po.produire(BINCOND); po.produire(0); // on a ici le dernier bincond, on ne doit SURTOUT PAS dépiler le précédent, pour pouvoir faire le chaînage
+				po.modifier(last_bsifaux1, po.getIpo()+1);
 				pileRep.empiler(po.getIpo());
 				break;
-		case 38: // chaînage des bincond
-				
+		case 41: // on doit enregistrer l'index du début de l'expression du tt que...
+				pileRep.empiler(po.getIpo()+1);
 				break;
+		
+		/* DÉBUT COMPILATION DES PROCÉDURES */
+		case 42: 
+				if(presentIdent(1) == 0) {
+					placeIdent(UtilLex.numIdCourant, PROC , NEUTRE , po.getIpo());
+					placeIdent(-1, PRIVEE, NEUTRE, -1); // on ne connaît pas encore le nombre de paramètres
+					bc = it+1;
+				}
+				else {
+					UtilLex.messErr("Procédure déja déclarée.");
+				}
+				break;
+		case 43: // on doit modifier la ligne privée décrivant la procédure
+				tabSymb[bc-1].info = nbParams;
+				break;
+				
 		default:
 			System.out.println("Point de generation non prévu dans votre liste");;
 			break;

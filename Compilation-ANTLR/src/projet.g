@@ -77,7 +77,7 @@ type  : 'ent' {PtGen.pt(14);}
 decprocs: (decproc ptvg)+
   ;
   
-decproc :  'proc'  ident  parfixe? parmod? consts? vars? corps 
+decproc :  'proc'  ident {PtGen.pt(42);} parfixe? parmod? {PtGen.pt(43);} consts? vars? corps 
   ;
   
 ptvg  : ';'
@@ -117,12 +117,12 @@ inssi : 'si' expression {PtGen.pt(8);} 'alors' instructions ('sinon' {PtGen.pt(3
   ;
   
 inscond : 'cond' {PtGen.pt(37);} expression {PtGen.pt(8);} ':' instructions 
-          (',' {PtGen.pt(38);} expression {PtGen.pt(8);} ':' instructions )* 
-          ('aut'  instructions |  ) 
+          (',' {PtGen.pt(38);} expression {PtGen.pt(8);} ':' instructions )*
+          ({PtGen.pt(40);} 'aut' instructions {PtGen.pt(39);} | {PtGen.pt(39);} ) 
           'fcond' 
   ;
   
-boucle  : 'ttq'  expression {PtGen.pt(8);} 'faire' instructions {PtGen.pt(36);} 'fait' 
+boucle  : 'ttq' {PtGen.pt(41);} expression {PtGen.pt(8);} 'faire' instructions {PtGen.pt(36);} 'fait' 
   ;
   
 lecture: 'lire' '(' ident {PtGen.pt(28);} ( ',' ident {PtGen.pt(28);} )* ')' 
