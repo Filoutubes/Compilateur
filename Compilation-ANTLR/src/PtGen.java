@@ -215,6 +215,7 @@ public class PtGen {
 		tCour = NEUTRE;
 		
 		adVar = 0; // mise à 0 de l'adresse courante dans la table des symboles
+		nbParams = 0;
 
 	} // initialisations
 
@@ -269,8 +270,13 @@ public class PtGen {
 				vCour = FAUX;
 				break;
 		case 7: // on a lu un ident de variable
-				if(presentIdent(1) == 0) {
-					placeIdent(UtilLex.numIdCourant, VARGLOBALE, tCour, adVar);
+				if(presentIdent(bc) == 0) {
+					if(bc != 1) {
+						placeIdent(UtilLex.numIdCourant, VARLOCALE, tCour, adVar);
+					}
+					else {
+						placeIdent(UtilLex.numIdCourant, VARGLOBALE, tCour, adVar);
+					}
 					adVar++;
 				}
 				else {
@@ -390,8 +396,13 @@ public class PtGen {
 				break;
 		case 30: // réserver
 				po.produire(RESERVER);
-				po.produire(adVar);
-				desc.setTailleGlobaux(adVar);
+				if(bc == 1) {
+					po.produire(adVar);
+					desc.setTailleGlobaux(adVar);
+				}
+				else {
+					po.produire(adVar - nbParams - 1);
+				}
 				break;
 		case 31: // lecture d'un ident
 			// on doit sauvegarder le type courant et l'index courant dans la table des symboles, de la variable à lire
@@ -399,8 +410,8 @@ public class PtGen {
 				UtilLex.messErr("Ident non reconnu.");
 			}
 			else {
-				iVarLue = presentIdent(1);
-				if(tabSymb[iVarLue].categorie == CONSTANTE) { // on EMPILE une constante, on ne la lit pas
+				iVarLue = presentIdent(bc);
+				if(tabSymb[iVarLue].categorie == CONSTANTE || tabSymb[iVarLue].categorie == PARAMFIXE) { // on EMPILE une constante, on ne la lit pas
 					UtilLex.messErr("L'ident n'est pas une variable.");
 					break; // return early
 				}
@@ -421,8 +432,22 @@ public class PtGen {
 					// Neutre
 					UtilLex.messErr("Type inconnu.");
 				}
-				po.produire(AFFECTERG);
-				po.produire(tabSymb[iVarLue].info);
+				switch(tabSymb[iVarLue].categorie) {
+					case VARGLOBALE:
+						po.produire(AFFECTERG);
+						po.produire(tabSymb[iVarLue].info);
+						break;
+					case VARLOCALE:
+						po.produire(AFFECTERL);
+						po.produire(tabSymb[iVarLue].info);
+						po.produire(0);
+						break;
+					case PARAMMOD:
+						po.produire(AFFECTERL);
+						po.produire(tabSymb[iVarLue].info);
+						po.produire(1);
+						break;
+				}
 				break;
 		case 33: // on doit évaluer un ident et pouvoir le retrouver dans la table des ident
 				if(presentIdent(1) == 0) {
@@ -439,6 +464,21 @@ public class PtGen {
 					else if(tabSymb[presentIdent(1)].categorie == CONSTANTE) {
 						po.produire(EMPILER);
 						po.produire(vCour);
+					}
+					else if(tabSymb[presentIdent(bc)].categorie == PARAMFIXE) {
+						po.produire(CONTENUL);
+						po.produire(vCour);
+						po.produire(0);
+					}
+					else if(tabSymb[presentIdent(bc)].categorie == PARAMMOD) {
+						po.produire(CONTENUL);
+						po.produire(vCour);
+						po.produire(1);
+					}
+					else if(tabSymb[presentIdent(bc)].categorie == VARLOCALE) {
+						po.produire(CONTENUL);
+						po.produire(vCour);
+						po.produire(0);
 					}
 					else {
 						UtilLex.messErr("Type inconnu.");
@@ -503,20 +543,107 @@ public class PtGen {
 				break;
 		
 		/* DÉBUT COMPILATION DES PROCÉDURES */
-		case 42: 
+		
+		case 42: // on doit produire le premier bincond (début du programme), pour arriver (à la fin de toutes les décl) sur le main
+				po.produire(BINCOND);
+				po.produire(0);
+				pileRep.empiler(po.getIpo()); // on empile l'ipo de la valeur du bincond pour pouvoir le modifier par la suite
+				break;
+		case 43:
+				po.modifier(pileRep.depiler(), po.getIpo()+1); // on modifie la valeur du bincond
+				break;
+		case 44: 
 				if(presentIdent(1) == 0) {
 					placeIdent(UtilLex.numIdCourant, PROC , NEUTRE , po.getIpo());
 					placeIdent(-1, PRIVEE, NEUTRE, -1); // on ne connaît pas encore le nombre de paramètres
+					adVar = 0; // les var globales sont déjà déclarées
 					bc = it+1;
 				}
 				else {
 					UtilLex.messErr("Procédure déja déclarée.");
 				}
 				break;
-		case 43: // on doit modifier la ligne privée décrivant la procédure
+		case 45: // fin de déclaration des paramètres
 				tabSymb[bc-1].info = nbParams;
+				adVar = nbParams+2; // on fait + 2, pour éviter les adresses nbParams et nbParams+1 (utilisées par MAPILE)
 				break;
-				
+		case 46: // fin de la procédure
+				po.produire(RETOUR);
+				po.produire(nbParams);
+				it = bc + nbParams - 1; // on arrive sur le dernier param déclaré: au prochain place ident, on placera notre donnée sur la ligne suivante (on incrémente it d'abord)
+				// on doit supprimer les variables locales et mettre à - 1 les identifiants des params (fixes ou mods)
+				for(int i = bc; i<= it; i++) {
+					tabSymb[i].code = -1;
+				}
+				// on remet à 1 bc et à 0 le nombre de paramètres
+				bc = 1;
+				nbParams = 0;
+				break;
+		case 47: // déclaration param fixe
+				if(presentIdent(bc) == 0) {
+					placeIdent(UtilLex.numIdCourant, PARAMFIXE, tCour, nbParams);
+					nbParams++;
+				}
+				else {
+					UtilLex.messErr("Paramètre fixe déjà déclaré.");
+				}
+				break;
+		case 48: // déclaration param mod
+				if(presentIdent(bc) == 0) {
+					placeIdent(UtilLex.numIdCourant, PARAMMOD, tCour, nbParams);
+					nbParams++;
+				}
+				else {
+					UtilLex.messErr("Paramètre modifiable déjà déclaré.");
+				}
+				break;
+		case 49: // gestion de l'appel de fonction
+				if(presentIdent(1) == 0) {
+					UtilLex.messErr("La procédure appelée n'existe pas.");
+				}
+				else {
+					int indexProc = presentIdent(1);
+					po.produire(APPEL);
+					po.produire(tabSymb[indexProc].info);
+					po.produire(tabSymb[indexProc+1].info);
+				}
+				break;
+		case 50: // gestion de la mise en passage en paramètres mod de fonction
+				if(presentIdent(1) == 0) {
+					UtilLex.messErr("Cet ident n'existe pas.");
+				}
+				else {
+					int identParam = presentIdent(1);
+					if(tabSymb[identParam].type == tCour) {
+						switch(tabSymb[identParam].categorie) {
+							case VARGLOBALE: 
+								po.produire(EMPILERADG); 
+								po.produire(tabSymb[identParam].info); 
+								break;
+								
+							case VARLOCALE:
+								po.produire(EMPILERADL);
+								po.produire(tabSymb[identParam].info);
+								po.produire(0);
+								break;
+							case PARAMMOD:
+								po.produire(EMPILERADL);
+								po.produire(tabSymb[identParam].info);
+								po.produire(1);
+								break;
+							case PARAMFIXE:
+								po.produire(EMPILERADL);
+								po.produire(tabSymb[identParam].info);
+								po.produire(0);
+								break;
+							default:
+								
+						}
+					}
+					else {
+						UtilLex.messErr("Le type du paramètre ne correspond pas.");
+					}
+				}
 		default:
 			System.out.println("Point de generation non prévu dans votre liste");;
 			break;
