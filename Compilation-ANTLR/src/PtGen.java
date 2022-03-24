@@ -401,7 +401,7 @@ public class PtGen {
 					desc.setTailleGlobaux(adVar);
 				}
 				else {
-					po.produire(adVar - nbParams - 1);
+					po.produire(adVar - nbParams - 2);
 				}
 				break;
 		case 31: // lecture d'un ident
@@ -410,7 +410,7 @@ public class PtGen {
 				UtilLex.messErr("Ident non reconnu.");
 			}
 			else {
-				iVarLue = presentIdent(bc);
+				iVarLue = presentIdent(1);
 				if(tabSymb[iVarLue].categorie == CONSTANTE || tabSymb[iVarLue].categorie == PARAMFIXE) { // on EMPILE une constante, on ne la lit pas
 					UtilLex.messErr("L'ident n'est pas une variable.");
 					break; // return early
@@ -447,6 +447,7 @@ public class PtGen {
 						po.produire(tabSymb[iVarLue].info);
 						po.produire(1);
 						break;
+					default: UtilLex.messErr("Le type de l'ident n'est pas correct: il n'est pas (ré)affectable.");
 				}
 				break;
 		case 33: // on doit évaluer un ident et pouvoir le retrouver dans la table des ident
@@ -481,7 +482,7 @@ public class PtGen {
 						po.produire(0);
 					}
 					else {
-						UtilLex.messErr("Type inconnu.");
+						UtilLex.messErr("Type inconnu: erreur lors de la lecture de l'ident.");
 					}
 				}
 				break;
@@ -598,19 +599,13 @@ public class PtGen {
 				}
 				break;
 		case 49: // gestion de l'appel de fonction
-				if(presentIdent(1) == 0) {
-					UtilLex.messErr("La procédure appelée n'existe pas.");
-				}
-				else {
-					int indexProc = presentIdent(1);
-					po.produire(APPEL);
-					po.produire(tabSymb[indexProc].info);
-					po.produire(tabSymb[indexProc+1].info);
-				}
+				po.produire(APPEL);
+				po.produire(tabSymb[iVarLue].info);
+				po.produire(tabSymb[iVarLue+1].info);
 				break;
 		case 50: // gestion de la mise en passage en paramètres mod de fonction
 				if(presentIdent(1) == 0) {
-					UtilLex.messErr("Cet ident n'existe pas.");
+					UtilLex.messErr("Ce paramètre modifiable n'existe pas.");
 				}
 				else {
 					int identParam = presentIdent(1);
@@ -631,13 +626,9 @@ public class PtGen {
 								po.produire(tabSymb[identParam].info);
 								po.produire(1);
 								break;
-							case PARAMFIXE:
-								po.produire(EMPILERADL);
-								po.produire(tabSymb[identParam].info);
-								po.produire(0);
-								break;
 							default:
-								
+								UtilLex.messErr("L'identifiant n'est pas passable en paramètre mod (ce n'est ni une VARLOC, ni une VARGLOB, ni un PARAMMOD).");
+								break;
 						}
 					}
 					else {
