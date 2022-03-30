@@ -125,7 +125,7 @@ public class PtGen {
 	private static int adVar; // adresse de la variable
 	
 	private static int typeVarLue, iVarLue; // type et valeur de la variable/constante lue
-	private static int nbParams; // nombre de paramètres d'une fonction
+	private static int iProcLue, nbParams; // index et nombre de paramètres d'une fonction
 
 	// TABLE DES SYMBOLES
 	// ------------------
@@ -362,7 +362,7 @@ public class PtGen {
 				po.produire(EMPILER); // on empile une value de type int/long (un bool est représenté par les entiers 1/0)
 				po.produire(vCour);
 				break;
-		case 28: // lecture
+		case 28: // lecture (la lecture implique aussi une affectation: lire(x) = on affecte à x la valeur lue)
 				if(presentIdent(1) == 0) {
 					UtilLex.messErr("Ident non reconnu.");
 				}
@@ -378,8 +378,22 @@ public class PtGen {
 						//NEUTRE
 						UtilLex.messErr("Erreur: type non reconnu.");
 					}
-					po.produire(AFFECTERG);
-					po.produire(symb.info);
+					switch(symb.categorie) {
+						case VARGLOBALE: 
+							po.produire(AFFECTERG);
+							po.produire(symb.info);
+							break;
+						case VARLOCALE:
+							po.produire(AFFECTERL);
+							po.produire(symb.info);
+							po.produire(0);
+							break;
+						case PARAMMOD:
+							po.produire(AFFECTERL);
+							po.produire(symb.info);
+							po.produire(1);
+						default: UtilLex.messErr("Le type de l'ident à lire n'est pas correct: il n'est pas (ré)affectable.");
+					}
 				}
 				break;
 		case 29: // écriture
@@ -523,15 +537,14 @@ public class PtGen {
 		case 39: // on remonte la chaîne
 				int last_bsifaux = pileRep.depiler(); // on dépile le dernier bsifaux (on a su qu'il y en avait un car il restait un dernier bsifaux non modifié: d'où l'error "out of bounds, index -1")
 				int ipoValeurBinC = pileRep.depiler(); // dernier bincond de la chaîne
-				int valeurNextBinC = po.getElt(ipoValeurBinC);
+				int valeurNextBinC;
 				po.modifier(last_bsifaux, po.getIpo()+1); // si on exécute pas le corps de la dernière instruction (cond), on jump directement vers le dernier bincond (la fin du switch)
-				while(valeurNextBinC != 0) {
+				do {
+					valeurNextBinC = po.getElt(ipoValeurBinC);
 					po.modifier(ipoValeurBinC, po.getIpo()+1);
 					ipoValeurBinC = valeurNextBinC;
-					valeurNextBinC = po.getElt(ipoValeurBinC);
 				}
-				// on doit modifier la valeur du dernier bincond (bincond 0) aussi
-				po.modifier(ipoValeurBinC, po.getIpo()+1);
+				while(ipoValeurBinC != 0);
 				break;
 		case 40: // on exécute l'instruction autre
 				int last_bsifaux1 = pileRep.depiler(); // on dépile le "dernier" bsifaux (il nous faudra remonter les autres ensuite) et on produit bincond 0
@@ -555,7 +568,7 @@ public class PtGen {
 				break;
 		case 44: 
 				if(presentIdent(1) == 0) {
-					placeIdent(UtilLex.numIdCourant, PROC , NEUTRE , po.getIpo());
+					placeIdent(UtilLex.numIdCourant, PROC , NEUTRE , po.getIpo()+1);
 					placeIdent(-1, PRIVEE, NEUTRE, -1); // on ne connaît pas encore le nombre de paramètres
 					adVar = 0; // les var globales sont déjà déclarées
 					bc = it+1;
@@ -600,16 +613,35 @@ public class PtGen {
 				break;
 		case 49: // gestion de l'appel de fonction
 				po.produire(APPEL);
-				po.produire(tabSymb[iVarLue].info);
-				po.produire(tabSymb[iVarLue+1].info);
+				po.produire(tabSymb[iProcLue].info);
+				po.produire(tabSymb[iProcLue+1].info);
 				break;
-		case 50: // gestion de la mise en passage en paramètres mod de fonction
+		case 50: // gestion de l'appel de fonction: lecture de l'ident
 				if(presentIdent(1) == 0) {
+					UtilLex.messErr("L'ident n'existe pas.");
+				}
+				else {
+					iProcLue = presentIdent(1);
+					if(tabSymb[iProcLue].categorie != PROC) { // l'ident mis en param n'est pas celui d'une procédure
+						UtilLex.messErr("La procédure appelée n'existe pas.");
+						break; // return early
+					}
+					tCour = tabSymb[iProcLue].type;
+					vCour = tabSymb[iProcLue].info;
+				}
+				break;
+		case 51: // gestion de la mise en passage en paramètres mod de fonction
+				int identParam = presentIdent(1);
+				if(identParam == 0) {
 					UtilLex.messErr("Ce paramètre modifiable n'existe pas.");
 				}
 				else {
-					int identParam = presentIdent(1);
-					if(tabSymb[identParam].type == tCour) {
+					//itérer sur les params mods: while(tabSymb[iProcLue+i] == PARAMFIXE, on continue (et i commence à 2)
+					// à la fin de la boucle, si tabSymb[iProcLue+i].type == PARAMMOD -> ok, sinon ERREUR
+					// au niveau des adresses pour tabSymb lors des appels, besoin d'une var globale qu'on incrémente à chaque mise en paramètre de fonction. On lit les fixes avant les mods: il faut faire correspondre le nombre de param fixes au nombre de paramètres lors de l'appel de fonction (et repartir depuis ce nombre, dans la table des symboles pour les params mods)
+					System.out.println(tabSymb[identParam].toString());
+					System.out.println(tCour + ", " + vCour);
+					if(tabSymb[identParam].type == tabSymb[iProcLue+2].type) {
 						switch(tabSymb[identParam].categorie) {
 							case VARGLOBALE: 
 								po.produire(EMPILERADG); 
@@ -635,6 +667,7 @@ public class PtGen {
 						UtilLex.messErr("Le type du paramètre ne correspond pas.");
 					}
 				}
+				break;
 		default:
 			System.out.println("Point de generation non prévu dans votre liste");;
 			break;

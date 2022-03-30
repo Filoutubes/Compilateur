@@ -7,8 +7,8 @@ debut
 		b1: ecrire(1),
 		b2: cond
 			b3: ecrire(2),
-				b4: ecrire(3),
-				b5: ecrire(4)
+			b4: ecrire(3),
+			b5: ecrire(4)
 			aut ecrire(5)
 			fcond, 
 		b6: ecrire(6)
