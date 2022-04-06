@@ -23,6 +23,6 @@ programme deuxprocs:	{exemple d'execution dans poly}
 
 debut
 	lire(x);
-	p2(x+1, n)();
+	p2(x+1,n)();
 	ecrire(x)
 fin

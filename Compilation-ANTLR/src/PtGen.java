@@ -122,10 +122,10 @@ public class PtGen {
 
 	private static int tCour; // type de l'expression compilee
 	private static int vCour; // sert uniquement lors de la compilation d'une valeur (entiere ou boolenne)
-	private static int adVar; // adresse de la variable
+	private static int adVar; // adresse de la variable (son indice dans la table des symboles)
 	
-	private static int typeVarLue, iVarLue; // type et valeur de la variable/constante lue
-	private static int iProcLue, nbParams; // index et nombre de paramètres d'une fonction
+	private static int typeIdentLu, iIdentLu, nbParams; // type et index de l'ident lu + nombre de paramètres d'une fonction
+	private static int nbDefs, nbRefs; // compteur associé aux décl de procédures (déf) et aux réfs
 
 	// TABLE DES SYMBOLES
 	// ------------------
@@ -424,41 +424,41 @@ public class PtGen {
 				UtilLex.messErr("Ident non reconnu.");
 			}
 			else {
-				iVarLue = presentIdent(1);
-				if(tabSymb[iVarLue].categorie == CONSTANTE || tabSymb[iVarLue].categorie == PARAMFIXE) { // on EMPILE une constante, on ne la lit pas
+				iIdentLu = presentIdent(1);
+				if(tabSymb[iIdentLu].categorie == CONSTANTE || tabSymb[iIdentLu].categorie == PARAMFIXE) { // on EMPILE une constante, on ne la lit pas
 					UtilLex.messErr("L'ident n'est pas une variable.");
 					break; // return early
 				}
-				tCour = tabSymb[iVarLue].type;
-				vCour = tabSymb[iVarLue].info;
-				typeVarLue = tabSymb[iVarLue].type;
+				tCour = tabSymb[iIdentLu].type;
+				vCour = tabSymb[iIdentLu].info;
+				typeIdentLu= tabSymb[iIdentLu].type;
 			}
 			break;
 		case 32: // affectation (affecterg)
-				// il nous faut réutiliser iVarLue et typeVarlue et vérifier que les types concordent!
-				if(typeVarLue == BOOL) {
+				// il nous faut réutiliser iIdentLu et typeIdentLu et vérifier que les types concordent!
+				if(typeIdentLu == BOOL) {
 					verifBool(); // on vérifie que tCour == BOOL pour que la réaffectation puisse se faire
 				}
-				else if(typeVarLue == ENT) {
+				else if(typeIdentLu == ENT) {
 					verifEnt(); // on vérifie que tCour == ENT pour que la réaffectation puisse se faire
 				}
 				else {
 					// Neutre
 					UtilLex.messErr("Type inconnu.");
 				}
-				switch(tabSymb[iVarLue].categorie) {
+				switch(tabSymb[iIdentLu].categorie) {
 					case VARGLOBALE:
 						po.produire(AFFECTERG);
-						po.produire(tabSymb[iVarLue].info);
+						po.produire(tabSymb[iIdentLu].info);
 						break;
 					case VARLOCALE:
 						po.produire(AFFECTERL);
-						po.produire(tabSymb[iVarLue].info);
+						po.produire(tabSymb[iIdentLu].info);
 						po.produire(0);
 						break;
 					case PARAMMOD:
 						po.produire(AFFECTERL);
-						po.produire(tabSymb[iVarLue].info);
+						po.produire(tabSymb[iIdentLu].info);
 						po.produire(1);
 						break;
 					default: UtilLex.messErr("Le type de l'ident n'est pas correct: il n'est pas (ré)affectable.");
@@ -613,21 +613,21 @@ public class PtGen {
 				break;
 		case 49: // gestion de l'appel de fonction
 				po.produire(APPEL);
-				po.produire(tabSymb[iProcLue].info);
-				po.produire(tabSymb[iProcLue+1].info);
+				po.produire(tabSymb[iIdentLu].info);
+				po.produire(tabSymb[iIdentLu+1].info);
 				break;
 		case 50: // gestion de l'appel de fonction: lecture de l'ident
 				if(presentIdent(1) == 0) {
 					UtilLex.messErr("L'ident n'existe pas.");
 				}
 				else {
-					iProcLue = presentIdent(1);
-					if(tabSymb[iProcLue].categorie != PROC) { // l'ident mis en param n'est pas celui d'une procédure
+					iIdentLu = presentIdent(1);
+					if(tabSymb[iIdentLu].categorie != PROC) { // l'ident mis en param n'est pas celui d'une procédure
 						UtilLex.messErr("La procédure appelée n'existe pas.");
 						break; // return early
 					}
-					tCour = tabSymb[iProcLue].type;
-					vCour = tabSymb[iProcLue].info;
+					tCour = tabSymb[iIdentLu].type;
+					vCour = tabSymb[iIdentLu].info;
 				}
 				break;
 		case 51: // gestion de la mise en passage en paramètres mod de fonction
@@ -639,9 +639,9 @@ public class PtGen {
 					//itérer sur les params mods: while(tabSymb[iProcLue+i] == PARAMFIXE, on continue (et i commence à 2)
 					// à la fin de la boucle, si tabSymb[iProcLue+i].type == PARAMMOD -> ok, sinon ERREUR
 					// au niveau des adresses pour tabSymb lors des appels, besoin d'une var globale qu'on incrémente à chaque mise en paramètre de fonction. On lit les fixes avant les mods: il faut faire correspondre le nombre de param fixes au nombre de paramètres lors de l'appel de fonction (et repartir depuis ce nombre, dans la table des symboles pour les params mods)
-					System.out.println(tabSymb[identParam].toString());
-					System.out.println(tCour + ", " + vCour);
-					if(tabSymb[identParam].type == tabSymb[iProcLue+2].type) {
+					//System.out.println(tabSymb[identParam].toString());
+					//System.out.println(tCour + ", " + vCour);
+					//if(tabSymb[identParam].type == tabSymb[iIdentLu+2].type) {
 						switch(tabSymb[identParam].categorie) {
 							case VARGLOBALE: 
 								po.produire(EMPILERADG); 
@@ -662,10 +662,10 @@ public class PtGen {
 								UtilLex.messErr("L'identifiant n'est pas passable en paramètre mod (ce n'est ni une VARLOC, ni une VARGLOB, ni un PARAMMOD).");
 								break;
 						}
-					}
-					else {
-						UtilLex.messErr("Le type du paramètre ne correspond pas.");
-					}
+					//}
+					//else {
+						//UtilLex.messErr("Le type du paramètre ne correspond pas.");
+					//}
 				}
 				break;
 		default:
