@@ -1,6 +1,6 @@
 programme deuxprocs:	{exemple d'execution dans poly}
 
-	const n=10; var ent x;
+	const n=10; var ent x; bool i;
 
 	proc p1 mod (ent n)
 		const m=3; var ent x, i;
@@ -23,6 +23,6 @@ programme deuxprocs:	{exemple d'execution dans poly}
 
 debut
 	lire(x);
-	p2(x+1,n)();
+	p2(x+1, n)();
 	ecrire(x)
 fin

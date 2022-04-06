@@ -123,6 +123,7 @@ public class PtGen {
 	private static int tCour; // type de l'expression compilee
 	private static int vCour; // sert uniquement lors de la compilation d'une valeur (entiere ou boolenne)
 	private static int adVar; // adresse de la variable (son indice dans la table des symboles)
+	private static int adProc; // adresse de la procédure (son indice dans la table des symboles)
 	
 	private static int typeIdentLu, iIdentLu, nbParams; // type et index de l'ident lu + nombre de paramètres d'une fonction
 	private static int nbDefs, nbRefs; // compteur associé aux décl de procédures (déf) et aux réfs
@@ -635,37 +636,61 @@ public class PtGen {
 				if(identParam == 0) {
 					UtilLex.messErr("Ce paramètre modifiable n'existe pas.");
 				}
+				
 				else {
-					//itérer sur les params mods: while(tabSymb[iProcLue+i] == PARAMFIXE, on continue (et i commence à 2)
-					// à la fin de la boucle, si tabSymb[iProcLue+i].type == PARAMMOD -> ok, sinon ERREUR
-					// au niveau des adresses pour tabSymb lors des appels, besoin d'une var globale qu'on incrémente à chaque mise en paramètre de fonction. On lit les fixes avant les mods: il faut faire correspondre le nombre de param fixes au nombre de paramètres lors de l'appel de fonction (et repartir depuis ce nombre, dans la table des symboles pour les params mods)
-					//System.out.println(tabSymb[identParam].toString());
-					//System.out.println(tCour + ", " + vCour);
-					//if(tabSymb[identParam].type == tabSymb[iIdentLu+2].type) {
+					if(tabSymb[adProc].categorie != PARAMMOD) { 
+						UtilLex.messErr("Mauvais appel de fonction: un ou des paramètres modifiables sont en trop.");
+					}
+					else if(tabSymb[identParam].type != tabSymb[adProc].type) {
+						UtilLex.messErr("Le type demandé en paramètre modifiable par la procédure ne correspond pas.");
+					}
+					else {
 						switch(tabSymb[identParam].categorie) {
-							case VARGLOBALE: 
-								po.produire(EMPILERADG); 
-								po.produire(tabSymb[identParam].info); 
-								break;
-								
-							case VARLOCALE:
-								po.produire(EMPILERADL);
-								po.produire(tabSymb[identParam].info);
-								po.produire(0);
-								break;
-							case PARAMMOD:
-								po.produire(EMPILERADL);
-								po.produire(tabSymb[identParam].info);
-								po.produire(1);
-								break;
-							default:
-								UtilLex.messErr("L'identifiant n'est pas passable en paramètre mod (ce n'est ni une VARLOC, ni une VARGLOB, ni un PARAMMOD).");
-								break;
+						case VARGLOBALE: 
+							po.produire(EMPILERADG); 
+							po.produire(tabSymb[identParam].info); 
+							break;
+
+						case VARLOCALE:
+							po.produire(EMPILERADL);
+							po.produire(tabSymb[identParam].info);
+							po.produire(0);
+							break;
+						case PARAMMOD:
+							po.produire(EMPILERADL);
+							po.produire(tabSymb[identParam].info);
+							po.produire(1);
+							break;
+						default:
+							UtilLex.messErr("L'identifiant n'est pas passable en paramètre mod (ce n'est ni une VARLOC, ni une VARGLOB, ni un PARAMMOD).");
+							break;
 						}
-					//}
-					//else {
-						//UtilLex.messErr("Le type du paramètre ne correspond pas.");
-					//}
+						adProc++;
+					}
+				}
+				break;
+		case 52:
+				adProc = iIdentLu + 2; // on est sur le premier paramètre
+				break;
+		case 53:
+				if(tabSymb[adProc].categorie != PARAMFIXE) { 
+					UtilLex.messErr("Mauvais appel de fonction: un ou des paramètres fixes sont en trop.");
+				}
+				else if(tCour != tabSymb[adProc].type) {
+					UtilLex.messErr("Le type demandé en paramètre fixe par la procédure ne correspond pas.");
+				}
+				else {
+					adProc++;
+				}
+				break;
+		case 54: // on vérifie que lors de l'appel de fonction, il n'y avait pas d'arguments (en param fixe) manquants
+				if(tabSymb[adProc].categorie == PARAMFIXE) {
+					UtilLex.messErr("Mauvais appel de fonction: un ou des paramètres fixes sont manquants.");
+				}
+				break;
+		case 55: // on vérifie que lors de l'appel de fonction, il n'y avait pas d'arguments (en param fixe) manquants
+				if(tabSymb[adProc].categorie == PARAMMOD) {
+					UtilLex.messErr("Mauvais appel de fonction: un ou des paramètres modifiables sont manquants.");
 				}
 				break;
 		default:

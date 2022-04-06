@@ -1,6 +1,6 @@
 FICHIER TestsProjet/polyP11-exo-deuxprocs.gen : 
 
-   1  reserver        1
+   1  reserver        2
    3  bincond       115
    5  reserver        2
    7  empiler         3
@@ -56,8 +56,7 @@ FICHIER TestsProjet/polyP11-exo-deuxprocs.gen :
  120  empiler         1
  122  add       
  123  empiler        10
- 125  empileradg      0
- 127  appel          52   2
- 130  contenug        0
- 132  ecrent    
- 133  arret     
+ 125  appel          52   2
+ 128  contenug        0
+ 130  ecrent    
+ 131  arret     

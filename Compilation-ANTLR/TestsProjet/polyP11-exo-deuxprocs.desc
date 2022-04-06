@@ -1,8 +1,8 @@
 FICHIER TestsProjet/polyP11-exo-deuxprocs.desc :
 
 unite          null
-tailleCode     121
-tailleGlobaux  1
+tailleCode     131
+tailleGlobaux  2
 nbDef          0
 nbRef          0
 nbTransExt     0

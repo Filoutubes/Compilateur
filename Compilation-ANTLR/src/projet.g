@@ -133,14 +133,14 @@ ecriture: 'ecrire' '(' expression {PtGen.pt(29);} ( ',' expression {PtGen.pt(29)
   
 affouappel
   : ident  ( {PtGen.pt(31);}   ':=' expression {PtGen.pt(32);}
-            |  {PtGen.pt(50);} (effixes (effmods)?)? {PtGen.pt(49);}
+            |  {PtGen.pt(50);} (effixes {PtGen.pt(54);} (effmods {PtGen.pt(55);} )?)? {PtGen.pt(49);}
            )
   ;
   
-effixes : '(' (expression {PtGen.pt(52);} (',' expression {PtGen.pt(52);} )*)? {PtGen.pt(53);} ')'
+effixes : '(' {PtGen.pt(52);} (expression {PtGen.pt(53);} (',' expression {PtGen.pt(53);} )*)?  ')'
   ;
   
-effmods :'(' (ident {PtGen.pt(51);} (',' ident {PtGen.pt(51);} )*)? {PtGen.pt(53);} ')'
+effmods :'(' (ident {PtGen.pt(51);} (',' ident {PtGen.pt(51);} )*)? ')'
   ; 
   
 expression: (exp1) ('ou' {PtGen.pt(13);} exp1 {PtGen.pt(13);} {PtGen.pt(11);} )*
