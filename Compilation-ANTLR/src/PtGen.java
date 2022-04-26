@@ -295,6 +295,9 @@ public class PtGen {
 				//on ne connaît pas la valeur de l'ipo du branchement pour le moment, on produit -1
 				po.produire(-1);
 				
+				// on ajoute une ligne au vecteur de translation
+				modifVecteurTrans(TRANSCODE);
+				
 				// on empile l'ipo actuel (valeur du bsifaux) dans la pile des reprises, pour pouvoir le modifier par la suite
 				pileRep.empiler(po.getIpo());
 				break;
@@ -383,6 +386,9 @@ public class PtGen {
 						case VARGLOBALE: 
 							po.produire(AFFECTERG);
 							po.produire(symb.info);
+							
+							//on ajoute une ligne au vecteur de translation
+							modifVecteurTrans(TRANSDON);
 							break;
 						case VARLOCALE:
 							po.produire(AFFECTERL);
@@ -451,6 +457,9 @@ public class PtGen {
 					case VARGLOBALE:
 						po.produire(AFFECTERG);
 						po.produire(tabSymb[iIdentLu].info);
+						
+						//on ajoute une ligne au vecteur de translation
+						modifVecteurTrans(TRANSDON);
 						break;
 					case VARLOCALE:
 						po.produire(AFFECTERL);
@@ -476,6 +485,9 @@ public class PtGen {
 					if(tabSymb[presentIdent(1)].categorie == VARGLOBALE) {
 						po.produire(CONTENUG);
 						po.produire(vCour);
+						
+						//on ajoute une ligne au vecteur de translation
+						modifVecteurTrans(TRANSDON);
 					}
 					else if(tabSymb[presentIdent(1)].categorie == CONSTANTE) {
 						po.produire(EMPILER);
@@ -507,6 +519,10 @@ public class PtGen {
 				po.produire(BINCOND);
 				//on ne connaît pas la valeur de l'ipo du branchement pour le moment, on stocke -1 dans la pile
 				po.produire(-1);
+				
+				// on ajoute une ligne au vecteur de translation
+				modifVecteurTrans(TRANSCODE);
+				
 				// on empile l'ipo actuel dans la pile des reprises, pour pouvoir le modifier par la suite
 				pileRep.empiler(po.getIpo());
 				
@@ -521,7 +537,10 @@ public class PtGen {
 				int ipoBoucle = pileRep.depiler(); // on récupère l'ipo du début de l'expression du tt que
 				po.produire(BINCOND);
 				po.produire(ipoBoucle);
-				//po.produire(bsifaux2 - 1);
+				
+				// on ajoute une ligne au vecteur de translation
+				modifVecteurTrans(TRANSCODE);
+				
 				po.modifier(bsifaux2, po.getIpo()+1); // on remplace le -1 par ipo+1 pour passer à la ligne après le bincond si la cond n'est pas valide
 				break;
 		//COND
@@ -532,6 +551,10 @@ public class PtGen {
 				int ipoBsifaux = pileRep.depiler();
 				po.produire(BINCOND);
 				po.produire(pileRep.depiler()); // on dépile le bincond
+				
+				//on ajoute une ligne au vecteur de translation
+				modifVecteurTrans(TRANSCODE);
+				
 				po.modifier(ipoBsifaux, po.getIpo()+1); // si on exécute pas le corps de l'instruction, on évalue la prochaine cond
 				pileRep.empiler(po.getIpo());
 			break;
@@ -550,6 +573,10 @@ public class PtGen {
 		case 40: // on exécute l'instruction autre
 				int last_bsifaux1 = pileRep.depiler(); // on dépile le "dernier" bsifaux (il nous faudra remonter les autres ensuite) et on produit bincond 0
 				po.produire(BINCOND); po.produire(0); // on a ici le dernier bincond, on ne doit SURTOUT PAS dépiler le précédent, pour pouvoir faire le chaînage
+				
+				//on ajoute une ligne au vecteur de translation
+				modifVecteurTrans(TRANSCODE);
+				
 				po.modifier(last_bsifaux1, po.getIpo()+1);
 				pileRep.empiler(po.getIpo());
 				break;
@@ -562,6 +589,10 @@ public class PtGen {
 		case 42: // on doit produire le premier bincond (début du programme), pour arriver (à la fin de toutes les décl) sur le main
 				po.produire(BINCOND);
 				po.produire(0);
+				
+				//on ajoute une ligne au vecteur de translation
+				modifVecteurTrans(TRANSCODE);
+				
 				pileRep.empiler(po.getIpo()); // on empile l'ipo de la valeur du bincond pour pouvoir le modifier par la suite
 				break;
 		case 43:
@@ -615,6 +646,13 @@ public class PtGen {
 		case 49: // gestion de l'appel de fonction
 				po.produire(APPEL);
 				po.produire(tabSymb[iIdentLu].info);
+				
+				if(tabSymb[iIdentLu+1].categorie == REF) { // référence de procédure extérieure
+					modifVecteurTrans(REFEXT);
+				}
+				else { // la procédure est locale
+					modifVecteurTrans(TRANSCODE);
+				}
 				po.produire(tabSymb[iIdentLu+1].info);
 				break;
 		case 50: // gestion de l'appel de fonction: lecture de l'ident
@@ -649,6 +687,9 @@ public class PtGen {
 						case VARGLOBALE: 
 							po.produire(EMPILERADG); 
 							po.produire(tabSymb[identParam].info); 
+							
+							//on ajoute une ligne au vecteur de translation
+							modifVecteurTrans(TRANSDON);
 							break;
 
 						case VARLOCALE:
