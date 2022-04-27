@@ -54,10 +54,10 @@ declarations
   ;
   
 partiedef
-  : 'def' ident  (',' ident )* ptvg
+  : 'def' ident {PtGen.pt(57);} (',' ident {PtGen.pt(57);} )* ptvg
   ;
   
-partieref: 'ref'  specif (',' specif)* ptvg
+partieref: 'ref'  specif {PtGen.pt(56);} (',' specif {PtGen.pt(56);})* ptvg
   ;
   
 specif  : ident  ( 'fixe' '(' type  ( ',' type  )* ')' )? 

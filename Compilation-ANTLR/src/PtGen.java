@@ -734,6 +734,15 @@ public class PtGen {
 					UtilLex.messErr("Mauvais appel de fonction: un ou des paramètres modifiables sont manquants.");
 				}
 				break;
+		case 56:
+				desc.ajoutRef(UtilLex.chaineIdent(UtilLex.numIdCourant));
+				desc.modifRefNbParam(desc.getNbRef(), nbParams);
+				placeIdent(UtilLex.numIdCourant, PROC, NEUTRE, desc.getNbRef());
+				placeIdent(-1, REF, NEUTRE, nbParams);
+				break;
+		case 57:
+				desc.ajoutDef(UtilLex.chaineIdent(UtilLex.numIdCourant)); // on ne modifie rien d'autre car on ne connaît pas encore adPo et nbParams
+				break;
 		default:
 			System.out.println("Point de generation non prévu dans votre liste");;
 			break;
