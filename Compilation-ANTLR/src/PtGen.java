@@ -739,9 +739,22 @@ public class PtGen {
 				desc.modifRefNbParam(desc.getNbRef(), nbParams);
 				placeIdent(UtilLex.numIdCourant, PROC, NEUTRE, desc.getNbRef());
 				placeIdent(-1, REF, NEUTRE, nbParams);
+				nbParams = 0;
 				break;
 		case 57:
 				desc.ajoutDef(UtilLex.chaineIdent(UtilLex.numIdCourant)); // on ne modifie rien d'autre car on ne connaît pas encore adPo et nbParams
+				break;
+		case 58:
+				nbParams++; // param mod ou fixe sur une réf
+				break;
+		case 59:
+				desc.setUnite("programme");
+				break;
+		case 60:
+				desc.setUnite("module");
+				break;
+		case 61:
+				desc = new Descripteur(); // reset de nbRef/nbDef/nbTransExt
 				break;
 		default:
 			System.out.println("Point de generation non prévu dans votre liste");;

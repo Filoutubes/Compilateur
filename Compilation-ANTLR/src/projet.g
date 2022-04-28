@@ -39,13 +39,13 @@ unite  :   unitprog {PtGen.pt(255);} EOF
   ;
   
 unitprog
-  : 'programme' ident ':'  
+  : {PtGen.pt(61);} 'programme' {PtGen.pt(59);} ident ':'  
      declarations  
      corps { System.out.println("succes, arret de la compilation "); }
   ;
   
 unitmodule
-  : 'module' ident ':' 
+  : {PtGen.pt(61);} 'module' {PtGen.pt(60);} ident ':' 
      declarations   
   ;
   
@@ -60,8 +60,8 @@ partiedef
 partieref: 'ref'  specif {PtGen.pt(56);} (',' specif {PtGen.pt(56);})* ptvg
   ;
   
-specif  : ident  ( 'fixe' '(' type  ( ',' type  )* ')' )? 
-                 ( 'mod'  '(' type  ( ',' type  )* ')' )? 
+specif  : ident  ( 'fixe' '(' type {PtGen.pt(58);} ( ',' type {PtGen.pt(58);} )* ')' )? 
+                 ( 'mod'  '(' type {PtGen.pt(58);} ( ',' type {PtGen.pt(58);} )* ')' )? 
   ;
   
 consts  : 'const' ( ident  '=' valeur {PtGen.pt(2);} ptvg  )+ 
