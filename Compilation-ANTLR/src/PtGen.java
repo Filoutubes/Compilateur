@@ -232,8 +232,10 @@ public class PtGen {
 			initialisations();
 			break;
 
-		case 255 : 
-			po.produire(ARRET);
+		case 255 :
+			if(desc.getUnite().equals("programme")) {
+				po.produire(ARRET);
+			}
 			desc.setTailleCode(po.getIpo());
 			afftabSymb(); // affichage de la table des symboles en fin de compilation
 			
@@ -241,10 +243,6 @@ public class PtGen {
 			po.constObj();
 			po.constGen();
 			desc.ecrireDesc(UtilLex.nomSource);
-			break;
-
-			// TODO
-		case 1: 
 			break;
 		case 2: // constante
 			if(presentIdent(1) == 0) {
@@ -359,8 +357,6 @@ public class PtGen {
 				break;
 		case 25:
 				verifEnt();
-				break;
-		case 26: // TODO
 				break;
 		case 27:
 				po.produire(EMPILER); // on empile une value de type int/long (un bool est représenté par les entiers 1/0)
@@ -587,16 +583,20 @@ public class PtGen {
 		/* DÉBUT COMPILATION DES PROCÉDURES */
 		
 		case 42: // on doit produire le premier bincond (début du programme), pour arriver (à la fin de toutes les décl) sur le main
-				po.produire(BINCOND);
-				po.produire(0);
-				
-				//on ajoute une ligne au vecteur de translation
-				modifVecteurTrans(TRANSCODE);
-				
-				pileRep.empiler(po.getIpo()); // on empile l'ipo de la valeur du bincond pour pouvoir le modifier par la suite
+				if(desc.getUnite().equals("programme")) {
+					po.produire(BINCOND);
+					po.produire(0);
+					
+					//on ajoute une ligne au vecteur de translation
+					modifVecteurTrans(TRANSCODE);
+					
+					pileRep.empiler(po.getIpo()); // on empile l'ipo de la valeur du bincond pour pouvoir le modifier par la suite
+				}
 				break;
 		case 43:
-				po.modifier(pileRep.depiler(), po.getIpo()+1); // on modifie la valeur du bincond
+				if(desc.getUnite().equals("programme")) {
+					po.modifier(pileRep.depiler(), po.getIpo()+1); // on modifie la valeur du bincond (on s'assure qu'on est bien dans un programme)
+				}
 				break;
 		case 44: 
 				if(presentIdent(1) == 0) {
@@ -755,6 +755,23 @@ public class PtGen {
 				break;
 		case 61:
 				desc = new Descripteur(); // reset de nbRef/nbDef/nbTransExt
+				break;
+		case 62: // on doit mettre à jour tabDef grâce à tabSymb
+				for(int i = 1; i <= desc.getNbDef(); i++) { // on va de 1 à nbDef car dans le descripteur, on incrémente d'abord nbDef
+					// il faut maintenant rechercher dans tabSymb
+					for(int j = 1; j < it; j++) {
+						if(tabSymb[j].categorie == PROC && desc.getDefNomProc(i).equals(UtilLex.chaineIdent(tabSymb[j].code))) {
+							// on met à jour nbParam et adPo de la proc dans tabDef
+							desc.modifDefAdPo(i, tabSymb[j].info);
+							desc.modifDefNbParam(i, tabSymb[j+1].info);
+							
+							// on met à jour la catégorie dans tabSymb
+							tabSymb[j+1].categorie = DEF;
+							break; // fin for
+						}
+						//sinon on continue de chercher
+					}
+				}
 				break;
 		default:
 			System.out.println("Point de generation non prévu dans votre liste");;

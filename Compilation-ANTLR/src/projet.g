@@ -46,7 +46,7 @@ unitprog
   
 unitmodule
   : {PtGen.pt(61);} 'module' {PtGen.pt(60);} ident ':' 
-     declarations   
+     declarations {PtGen.pt(62);} 
   ;
   
 declarations
