@@ -3,24 +3,28 @@ import java.io.*;
 import java.util.*;
 
 
-/***********************************************************************************************
- * @author Bahdon Barkhad, Gabriel Renault et Emma Demure
- ***********************************************************************************************/
+//TODO : Renseigner le champs auteur : BARKHAD_Badhon_RENAULT_Gabriel_DEMURE_Emma
+ /**
+ *
+ * @author BARKHAD Badhon, RENAULT Gabriel, DEMURE Emma
+ * @version 2022
+ *
+ */
 
 public class Edl {
 
 	/***********************************************************************************************
-	 * ************************   D…FINITIONS DES VARIABLES ****************************************
+	 * ************************   D√âFINITIONS DES VARIABLES ****************************************
 	 ***********************************************************************************************/
 	
 	
-	/* VARIABLES FINAL N…CESSAIRES */
+	/* VARIABLES FINAL N√âCESSAIRES */
 	
-	//Nombre max de rÈfÈrences externes et de definitions acceptÈes/unitÈ. 
+	//Nombre max de r√©f√©rences externes et de definitions accept√©es/unit√©. 
 	//Codes pour les vecteurs de translation : TRANSDON, TRANSCODE et REFEXT.
 	private static final int MAXREF = 10, MAXDEF = 10, TRANSDON=1, TRANSCODE=2, REFEXT=3;
 	
-	// Les 2 types d'erreurType ‡ rencontrer
+	// Les 2 types d'erreurType √† rencontrer
 	static final int FATALE = 0, NONFATALE = 1;
 	
 	// NBOBJMAX = taille maximale du code et NBMODMAX = nombre max de modules
@@ -29,8 +33,8 @@ public class Edl {
 	 
 	/* TABLEAUX */
 
-	// descriptArray est le tableau qui rassemble tous les descripteurs de l'Èditeur de liens.
-	static Descripteur[] descriptArray = new Descripteur[NBMODMAX+1];
+	// tabDesc est le tableau qui rassemble tous les descripteurs de l'√©diteur de liens.
+	static Descripteur[] tabDesc = new Descripteur[NBMODMAX+1];
 
 	// tableau renseignant tous les po
 	static int[] po = new int[(NBMODMAX+1) * NBOBJMAX]; 
@@ -49,24 +53,24 @@ public class Edl {
 	// tableau des transitions
 	static HashMap<Integer, Integer> tabTrans = new HashMap<Integer, Integer>(); 
 	
-	// tableau renseignant le nom de chaque unitÈ
+	// tableau renseignant le nom de chaque unit√©
 	static String[] unitName = new String[NBMODMAX+1];
 
-	/* TABLEAUX */
+	/* AUTRES VARIABLES */
 	
 	static int erreurType;
-	static int ipo; 
-	static int numeroModule; 
-    static String progName;
-    static int repereDicoDef = 0;
+	static int ipo;
+	static int numeroModule;    //indice module en traitement
+    static String progName;     //nom du programme en cours de traitement
+    static int repereDicoDef = 0; //sert de rep¬ère lors du parcours de dicodef
 
     /***********************************************************************************************
-	 * ************************   D…FINITIONS DES M…THODES ****************************************
+	 * ************************   D√âFINITIONS DES M√âTHODES ****************************************
 	 ***********************************************************************************************/
     
     
     /**
-	 * Remplissage du dictionnaire de toutes les dÈfinitions du code et relevÈ des doubles dÈclarations de dÈfinitions.
+	 * Remplissage du dictionnaire de toutes les d√©finitions du code et relev√© des doubles d√©clarations de d√©finitions.
 	 */
     
 	static void remplissageDicoDef() {
@@ -75,21 +79,20 @@ public class Edl {
 		
 		for (int i = 0; i < numeroModule+1; i++) {
 			
-			for (int j = 1; j <= descriptArray[i].getNbDef(); j++) {
+			for (int j = 1; j <= tabDesc[i].getNbDef(); j++) {
 
-				dicoDef[index] = descriptArray[i].new EltDef(descriptArray[i].getDefNomProc(j), descriptArray[i].getDefAdPo(j) + transCode[i], descriptArray[i].getDefNbParam(j));
+				dicoDef[index] = tabDesc[i].new EltDef(tabDesc[i].getDefNomProc(j), tabDesc[i].getDefAdPo(j) + transCode[i], tabDesc[i].getDefNbParam(j));
 				
-				//TODO : Jsp si c'est utile de faire Áa
-				//descriptArray[i].ajoutDef(descriptArray[i].getDefNomProc(j)); //Ajout dans la table des dÈfinitions du nom de la proc
-				//descriptArray[i].modifDefAdPo(j, descriptArray[i].getDefAdPo(j) + transCode[i]); //De son po
-				//descriptArray[i].modifDefNbParam(j, descriptArray[i].getDefNbParam(j)); // De son nb de params
+				//tabDesc[i].ajoutDef(tabDesc[i].getDefNomProc(j)); //Ajout dans la table des d√©finitions du nom de la proc
+				//tabDesc[i].modifDefAdPo(j, tabDesc[i].getDefAdPo(j) + transCode[i]); //De son po
+				//tabDesc[i].modifDefNbParam(j, tabDesc[i].getDefNbParam(j)); // De son nb de params
 				
-				// Gestion des erreurs : PLUSIEURS DEFINITIONS DU M ME NOM.
+				// Gestion des erreurs : PLUSIEURS DEFINITIONS DU M√äME NOM.
 				for (int k = 0; k < index; k++) {
 					
-					if (descriptArray[j].getDefNomProc(index).equalsIgnoreCase(descriptArray[j].getDefNomProc(k))) {
+					if (tabDesc[j].getDefNomProc(index).equalsIgnoreCase(tabDesc[j].getDefNomProc(k))) {
 						
-						fatalError(FATALE, "Erreur : il y a plusieurs occurrences de : " + descriptArray[j].getDefNomProc(index) + " dans votre code.");
+						fatalError(FATALE, "Erreur : il y a plusieurs occurrences de : " + tabDesc[j].getDefNomProc(index) + " dans votre code.");
 					}
 				}
 				index++;
@@ -103,11 +106,11 @@ public class Edl {
 	
 	static void remplissageTransDon() {
 		
-		//On commence ‡ l'indice 1
+		//On commence √† l'indice 1
 		transDon[0] = 0;
 		
 		for (int i = 1; i < numeroModule+1; i++) {
-			transDon[i] = transDon[i-1] + descriptArray[i-1].getTailleGlobaux(); //M‡j de transdon
+			transDon[i] = transDon[i-1] + tabDesc[i-1].getTailleGlobaux(); //M√†j de transdon
 		}
 	}
 	
@@ -117,18 +120,18 @@ public class Edl {
 	
 	static void remplissageTransCode() {
 		
-		//On commence ‡ l'indice 1
+		//On commence √† l'indice 1
 		transCode[0] = 0;
 		
 		for (int i = 1; i < numeroModule+1; i++) {
-			transCode[i] = transCode[i-1] + descriptArray[i-1].getTailleCode(); //M‡j de transcode
+			transCode[i] = transCode[i-1] + tabDesc[i-1].getTailleCode(); //M√†j de transcode
 		}
 	}
 	
 
 
 	/**
-	 * Fonction qui remplit le tableau 2D adFinale et qui relie les dÈfintion ‡ leur rÈfÈrences externes.
+	 * Fonction qui remplit le tableau 2D adFinale et qui relie les d√©fintion √† leur r√©f√©rences externes.
 	 */
 	
 	static void remplissageRefExt() {
@@ -139,58 +142,56 @@ public class Edl {
 		
 				for (int j = 0; i < dicoDef.length; j++) {
 					
-					isPresent = descriptArray[i].presentDef(dicoDef[j].nomProc);
+					isPresent = tabDesc[i].presentDef(dicoDef[j].nomProc);
 					
 					if(isPresent != 0) {
 						
-						if (descriptArray[i].getRefNbParam(isPresent) != dicoDef[j].nbParam) {
+						if (tabDesc[i].getRefNbParam(isPresent) != dicoDef[j].nbParam) {
 							
-							fatalError(FATALE, "Erreur : " + dicoDef[j].nomProc + " devrait avoir " + descriptArray[i].getRefNbParam(isPresent) + "paramËtres.");
+							fatalError(FATALE, "Erreur : " + dicoDef[j].nomProc + " devrait avoir " + tabDesc[i].getRefNbParam(isPresent) + "param√®tres.");
 						}
 						
 						adFinale[i][isPresent] = dicoDef[j].adPo;
 						
 					}	
-					else { fatalError(FATALE, "Erreur : Aucune rÈfÈrence pour cette procÈdure"); }
+					else { fatalError(FATALE, "Erreur : Aucune r√©f√©rence pour cette proc√©dure"); }
 			}
 		}
 	}
 	
 	
 	/**
-	 * CrÈation du fichier .obj (exÈcutable MaPile)
+	 * Cr√©ation du fichier .obj (ex√©cutable MaPile)
 	 */
+	static void constMap() {
 
-	static void createMapObj() {
-
-		// Ouverture du fichier .map et modification de celui-ci
-
-		OutputStream input = Ecriture.ouvrir(progName + ".map");
+        // input = fichier executable .map construit
+        OutputStream input = Ecriture.ouvrir(progName + ".map");
 		
-		//Tableau des po
+        // pour construire le code concatene de toutes les unit≈Ωs
 		int[] po = new int[(numeroModule+1) * NBOBJMAX+1];
 
 		if (input == null) {
-			fatalError(FATALE, "Erreur : EDL ne peut crÈer le fichier " + progName + ".map car on tente d'ouvir un programme qui n'existe pas.");
+			fatalError(FATALE, "Erreur : EDL ne peut cr√©er le fichier " + progName + ".map car on tente d'ouvir un programme qui n'existe pas.");
 		}
 
 		
 
-		//On parcourt toutes les unitÈs comme prÈcÈdemment -- COLLECTE DES TRANSEXT
+		//On parcourt toutes les unit√©s comme pr√©c√©demment -- COLLECTE DES TRANSEXT
 		for (int i = 0; i <= numeroModule; i++) {
 
 			InputStream current = Lecture.ouvrir(unitName[i] + ".obj");
-			Map<Integer, Integer> tabTrans = new HashMap<Integer, Integer>();// HashMap servant ‡ stocker les vecteurs de translation rencontrÈs
+			Map<Integer, Integer> tabTrans = new HashMap<Integer, Integer>();// HashMap servant √† stocker les vecteurs de translation rencontr√©s
 
 			int vTransitionType, ad; //variables stockant le code du vecteur de translation voulu et son adresse
 
 
 			if (current == null) {
-				fatalError(FATALE, "Erreur : " + unitName[i] + " vous tentez d'ouvrir un fichier .obj inexistant ou endommagÈ.");
+				fatalError(FATALE, "Erreur : " + unitName[i] + " vous tentez d'ouvrir un fichier .obj inexistant ou endommag√©.");
 			}
 
-			//On commence ‡ collecter tous les vTrans
-			for (int j = 0; j < descriptArray[i].getNbTransExt(); j++) {
+			//On commence √† collecter tous les vTrans
+			for (int j = 0; j < tabDesc[i].getNbTransExt(); j++) {
 
 				vTransitionType = Lecture.lireIntln(current); //cf lireDesc Descripteur.java
 				ad = Lecture.lireInt(current) + transCode[i];
@@ -198,11 +199,11 @@ public class Edl {
 				tabTrans.put(ad, vTransitionType);
 			}
 
-			//Nombre de rÈfÈrence externes, result = resultat de la requÍte ‡ la hashmap (adresse - type transition) tabTrans, lastInstruction = adresse de la derniere instrcution
-			int nbRefExt = 1, result = 0, lastInstruction = (i == numeroModule) ? descriptArray[i].getTailleCode()-1 : descriptArray[i].getTailleCode()-1;
+			//Nombre de r√©f√©rence externes, result = resultat de la requ√™te √† la hashmap (adresse - type transition) tabTrans, lastInstruction = adresse de la derniere instrcution
+			int nbRefExt = 1, result = 0, lastInstruction = (i == numeroModule) ? tabDesc[i].getTailleCode()-1 : tabDesc[i].getTailleCode()-1;
 
 
-			//RÈsolution des REFEXT, TRANSCODE ET TRANSDON sur tout po[] 
+			//R√©solution des REFEXT, TRANSCODE ET TRANSDON sur tout po[] 
 			
 			for (int k = 0; k < lastInstruction; k++) {
 
@@ -238,14 +239,14 @@ public class Edl {
 		} 
 
 
-		// R…SERVATION DE PLACE POUR LES VARGLOB DANS PO[] ET ECRITURE DANS UN FICHIER EPONYME
+		// R√âSERVATION DE PLACE POUR LES VARGLOB DANS PO[] ET ECRITURE DANS UN FICHIER EPONYME
 
-		po[2] = transDon[numeroModule]+descriptArray[numeroModule].getTailleGlobaux();
+		po[2] = transDon[numeroModule]+tabDesc[numeroModule].getTailleGlobaux();
 		for (int l = 0; l < ipo; l++) Ecriture.ecrireStringln(input, "" + po[l]);
 
 		Ecriture.fermer(input);
 
-		//CREATION DU FICHIER FINAL
+        // creation du fichier en mnemonique correspondant
 		Mnemo.creerFichier(ipo, po, progName + ".ima");
 
 	}
@@ -253,23 +254,24 @@ public class Edl {
 	
 
 	/**
-	 * Fonction qui rÈcupËre la totalitÈ des descripteurs et s'occupe du remplissage des variables.
+	 * Fonction qui r√©cup√®re la totalit√© des descripteurs et s'occupe du remplissage des variables.
 	 */
 
+    // utilitaire de remplissage de la table des descripteurs tabDesc
 	static void lireDescripteurs() {
 
-		System.out.println("--- MERCI DE FOURNIR LES NOM DE FICHIERS SANS SUFFIXES ---");
-		System.out.print(" -> Entrez le nom du programme : ");
+		System.out.println("les noms doivent etre fournis sans suffixe");
+		System.out.print("nom du programme : ");
 
 		String input = Lecture.lireString();
         progName = input;
 
 
-		descriptArray[0] = new Descripteur();
-		descriptArray[0].lireDesc(input);
+		tabDesc[0] = new Descripteur();
+		tabDesc[0].lireDesc(input);
 
-		if (!descriptArray[0].getUnite().equals("programme")) {
-			fatalError(FATALE, "Erreur : veuillez entrer un nom de programme.");
+		if (!tabDesc[0].getUnite().equals("programme")) {
+			fatalError(FATALE, "programme attendu");
 		}
 
 		unitName[0] = input;
@@ -278,7 +280,7 @@ public class Edl {
 		// ENREGISTREMENT DES MODULES
 		while ((!input.equals("")) && (numeroModule < NBMODMAX)) {
 
-		 System.out.print("Nom du prochain module " + (numeroModule+1) + " (PRESS RETURN si terminÈ) ");
+		 System.out.print("nom de module " + (numeroModule+1) + " (RC si termine) ");
 		 input = Lecture.lireString();
 
 		 // Si module non vide
@@ -287,16 +289,16 @@ public class Edl {
 			 numeroModule++;
 
 			 // Enregistre le nom du module (champ unite)
-			 descriptArray[numeroModule].setUnite(input);
+			 tabDesc[numeroModule].setUnite(input);
 			 unitName[numeroModule] = input;
 
-			 // CrÈation du descripteur du module
-			 descriptArray[numeroModule] = new Descripteur();
-			 descriptArray[numeroModule].lireDesc(input);
+			 // Cr√©ation du descripteur du module
+			 tabDesc[numeroModule] = new Descripteur();
+			 tabDesc[numeroModule].lireDesc(input);
 
 			 
-			 if (!descriptArray[numeroModule].getUnite().equals("module")) {
-				 fatalError(FATALE, "Erreur : ce n'est pas un module.");
+			 if (!tabDesc[numeroModule].getUnite().equals("module")) {
+				 fatalError(FATALE, "module attendu");
 			 }
 			
 		}
@@ -304,12 +306,7 @@ public class Edl {
 }
 	
 
-	/**
-	 * Fonction erreur
-	 * @param codeErreur un entier correspondant au type de l'erreur.
-	 * @param errorMessage le message d'erreur ‡ afficher 
-	 */
-
+    // utilitaire de traitement des erreurs
 	static void fatalError(int codeErreur, String errorMessage) {
 
 		System.out.println("----------------------------------------");
@@ -317,25 +314,25 @@ public class Edl {
 		System.out.println("----------------------------------------");
 
 		if (codeErreur == FATALE) {
-			System.out.println("ERREUR FATALE RENCONTR…E - ABANDON DE L'…DITION DE LIENS ");
+			System.out.println("ERREUR FATALE RENCONTREE - ABANDON DE L'EDITION DE LIENS ");
 			System.exit(1);
 		}
-		// RÈinitialisation de erreurType ‡ NONFATALE
+		// R√©initialisation de erreurType √† NONFATALE
 		erreurType = erreurType + 1;
 	}
 	
 	public static void main (String argv[]) {
 
 
-		System.out.println("EDITEUR DE LIENS (EDL) / Badhon Barkhad - Gabriel Renault - Emma Demure");
-
-		System.out.println("____________________________________________________________________________________ \n");
-
+        System.out.println("EDITEUR DE LIENS / PROJET LICENCE");
+        System.out.println("---------------------------------");
+        System.out.println("");
+        
 		erreurType = 0;
 		ipo = 1;
 
 
-		// Lecture des descripteurs et remplissage du dictionnaire des dÈfinitions
+		// Lecture des descripteurs et remplissage du dictionnaire des d√©finitions
 
 		lireDescripteurs();
 
@@ -347,9 +344,9 @@ public class Edl {
 		remplissageRefExt();
 
 
-		if(erreurType != 0) { System.out.println("Une ou plusieurs erreurs ont ÈtÈ rencontrÈes, AUCUN EX…CUTABLE PRODUIT."); System.exit(1); }
+		if(erreurType != 0) { System.out.println("Une ou plusieurs erreurs ont √©t√© rencontr√©es, AUCUN EX√âCUTABLE PRODUIT."); System.exit(1); }
 
-		// Si des erreurs ont ÈtÈ rencontrÈes
+		// Si des erreurs ont √©t√© rencontr√©es
 
 		if (erreurType > 0) {
 
@@ -359,12 +356,11 @@ public class Edl {
 		}
 		
 
-		// CrÈation de l'exÈcutable
-		createMapObj();
+		// Cr√©ation de l'ex√©cutable
+        constMap();
 
-		System.out.println("EDL a terminÈ");
+		System.out.println("Edition de liens terminee");
 
 	}
 
 }
-
