@@ -1,0 +1,13 @@
+FICHIER TestsProjet/polyP42-exemple-m1ess1.desc :
+
+unite          module
+tailleCode     87
+tailleGlobaux  3
+nbDef          3
+nbRef          0
+nbTransExt     21
+tabDef          
+    init1  3  0
+    ajout1  9  1
+    ecr1  65  0
+tabRef          

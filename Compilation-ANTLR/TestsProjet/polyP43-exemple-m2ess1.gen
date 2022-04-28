@@ -1,0 +1,47 @@
+FICHIER TestsProjet/polyP43-exemple-m2ess1.gen : 
+
+   1  reserver        3
+   3  empiler         0
+   5  affecterg       0
+   7  retour          0
+   9  contenug        0
+  11  empiler         0
+  13  eg        
+  14  bsifaux        28
+  16  contenul        0   0
+  19  affecterg       1
+  21  contenul        0   0
+  24  affecterg       2
+  26  bincond        56
+  28  contenul        0   0
+  31  contenug        1
+  33  inf       
+  34  bsifaux        43
+  36  contenul        0   0
+  39  affecterg       1
+  41  bincond        56
+  43  contenul        0   0
+  46  contenug        2
+  48  sup       
+  49  bsifaux        56
+  51  contenul        0   0
+  54  affecterg       2
+  56  contenug        0
+  58  empiler         1
+  60  add       
+  61  affecterg       0
+  63  retour          1
+  65  contenug        0
+  67  empiler         0
+  69  diff      
+  70  bsifaux        83
+  72  contenug        0
+  74  ecrent    
+  75  contenug        1
+  77  ecrent    
+  78  contenug        2
+  80  ecrent    
+  81  bincond        86
+  83  empiler         0
+  85  ecrent    
+  86  retour          0

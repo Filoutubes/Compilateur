@@ -1,6 +1,6 @@
-Bahdon - Emma - Demure
+Bahdon - Emma - Gabriel
 
-**COMPILATION DES PROCÉDURES**
+- Compilation des procédures
 
 Il y a 2 grandes parties au niveau de la compilation des procédures:
 
@@ -16,9 +16,13 @@ Il y a 2 grandes parties au niveau de la compilation des procédures:
 - il nous a ensuite fallu gérer les appels de fonction et le passage en paramètres (effixes/effmods)
 
 Nous pensons que notre implémentation actuelle est fonctionnelle, nous avons su régler les problèmes existant (mauvais comptage du nombre de variables locales pour le "réserver", production d'un affecterg/contenug à la place d'un affecterl/contenul, mauvais adressage des variables locales)
+De même, l'index de début du code de la proc dans tabSymb était incorrect: le problème a été réglé.
+La détection du mauvais nombre/type de paramètres lors de l'appel de fonction est aussi fonctionnelle.
 
-Nous avions juste un doute: lors du lirent/lirebool, peut-on produire un affecterl? Ou bien les méthodes lirebool/lirent ne peuvent être appelées que depuis un main? Nous n'avons pas dû gérer cet aspect là
 
+Concernant la compilation des instructions, nous avons pu gérer le cas où le cond n'avait qu'une seule partie.
+
+Ensuite, concernant la compilation séparée, nous avons su placer les bons points de génération et reprendre notre code (pour placer les vecteurs de translation aux bons endroits). Nous avons aussi modifié les conditions d'arrêt (uniquement pour programme) et les placements de bincond en tout début de code (uniquement pour les programmes).
 
 Résumé:
 
@@ -27,4 +31,8 @@ Ce qui fonctionne:
 - Compilation des expressions
 - Compilation des instructions si, ttq, cond
 - Compilation des procédures
+- Compilation séparée (pas entièrement)
+
+Ce qui ne fonctionne pas:
+- compilation séparée: on avait un problème avec contMap, nous n'avons pas réussi à l'implémenter correctement
 		

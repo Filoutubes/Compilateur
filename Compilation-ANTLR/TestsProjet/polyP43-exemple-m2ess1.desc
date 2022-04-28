@@ -1,0 +1,13 @@
+FICHIER TestsProjet/polyP43-exemple-m2ess1.desc :
+
+unite          module
+tailleCode     87
+tailleGlobaux  3
+nbDef          3
+nbRef          0
+nbTransExt     21
+tabDef          
+    init2  3  0
+    ajout2  9  1
+    ecr2  65  0
+tabRef          
