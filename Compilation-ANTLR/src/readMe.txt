@@ -1,38 +1,38 @@
-Bahdon - Emma - Gabriel
+B. - E. - G.
 
-- Compilation des procÈdures
+- Compilation des proc√©dures
 
-Il y a 2 grandes parties au niveau de la compilation des procÈdures:
-
-
-
-- il nous fallait dÈj‡ compiler leur dÈclaration (decprocs et decproc)
-
-	-> decprocs regroupe un ensemble de dÈclaration de procÈdures: il fallait placer le bincond du main avant puis empiler la valeur de l'ipo de ce bincond, et le dÈpiler ‡ la fin de la dÈclaration de toutes les 
-	   procÈdures (points de gÈnÈration 42 et 43).
-	-> ensuite, si l'on s'intÈresse ‡ decproc, il nous fallait rÈcupÈrer l'ident (point de gÈnÈration 44) pour pouvoir rajouter les lignes nÈcessaires dans la table des symboles. Nous avons ensuite rÈcupÈrÈ les params fixes/mods pour pouvoir les placer dans la table des symboles (points de gÈnÈration 47 et 48). Il ne fallait pas oublier de gÈnÈrer le point de gÈnÈration 45 dans decproc, aprËs avoir lu tous les paramËtres, pour modifier dans la table des symboles, le champ info de la dÈclaration de procÈdures et (plus important) dÈcaler l'adressage des variables locales de 2 (par rapport aux paramËtres), car les adresses nbParams et nbParams+1 sont utilisÈes par MAPILE.
-	-> ‡ la fin du corps de la fonction, il fallait placer un point de gÈnÈration pour effectuer le masquage. Comme prÈcisÈ dans le code, les variables locales ne sont pas effacÈes, elles seront simplement ÈcrasÈes en plaÁant it au niveau du dernier paramËtre de fonction.
-
-- il nous a ensuite fallu gÈrer les appels de fonction et le passage en paramËtres (effixes/effmods)
-
-Nous pensons que notre implÈmentation actuelle est fonctionnelle, nous avons su rÈgler les problËmes existant (mauvais comptage du nombre de variables locales pour le "rÈserver", production d'un affecterg/contenug ‡ la place d'un affecterl/contenul, mauvais adressage des variables locales)
-De mÍme, l'index de dÈbut du code de la proc dans tabSymb Ètait incorrect: le problËme a ÈtÈ rÈglÈ.
-La dÈtection du mauvais nombre/type de paramËtres lors de l'appel de fonction est aussi fonctionnelle.
+Il y a 2 grandes parties au niveau de la compilation des proc√©dures:
 
 
-Concernant la compilation des instructions, nous avons pu gÈrer le cas o˘ le cond n'avait qu'une seule partie.
 
-Ensuite, concernant la compilation sÈparÈe, nous avons su placer les bons points de gÈnÈration et reprendre notre code (pour placer les vecteurs de translation aux bons endroits). Nous avons aussi modifiÈ les conditions d'arrÍt (uniquement pour programme) et les placements de bincond en tout dÈbut de code (uniquement pour les programmes).
+- il nous fallait d√©j√† compiler leur d√©claration (decprocs et decproc)
 
-RÈsumÈ:
+	-> decprocs regroupe un ensemble de d√©claration de proc√©dures: il fallait placer le bincond du main avant puis empiler la valeur de l'ipo de ce bincond, et le d√©piler √† la fin de la d√©claration de toutes les 
+	   proc√©dures (points de g√©n√©ration 42 et 43).
+	-> ensuite, si l'on s'int√©resse √† decproc, il nous fallait r√©cup√©rer l'ident (point de g√©n√©ration 44) pour pouvoir rajouter les lignes n√©cessaires dans la table des symboles. Nous avons ensuite r√©cup√©r√© les params fixes/mods pour pouvoir les placer dans la table des symboles (points de g√©n√©ration 47 et 48). Il ne fallait pas oublier de g√©n√©rer le point de g√©n√©ration 45 dans decproc, apr√®s avoir lu tous les param√®tres, pour modifier dans la table des symboles, le champ info de la d√©claration de proc√©dures et (plus important) d√©caler l'adressage des variables locales de 2 (par rapport aux param√®tres), car les adresses nbParams et nbParams+1 sont utilis√©es par MAPILE.
+	-> √† la fin du corps de la fonction, il fallait placer un point de g√©n√©ration pour effectuer le masquage. Comme pr√©cis√© dans le code, les variables locales ne sont pas effac√©es, elles seront simplement √©cras√©es en pla√ßant it au niveau du dernier param√®tre de fonction.
+
+- il nous a ensuite fallu g√©rer les appels de fonction et le passage en param√®tres (effixes/effmods)
+
+Nous pensons que notre impl√©mentation actuelle est fonctionnelle, nous avons su r√©gler les probl√®mes existant (mauvais comptage du nombre de variables locales pour le "r√©server", production d'un affecterg/contenug √† la place d'un affecterl/contenul, mauvais adressage des variables locales)
+De m√™me, l'index de d√©but du code de la proc dans tabSymb √©tait incorrect: le probl√®me a √©t√© r√©gl√©.
+La d√©tection du mauvais nombre/type de param√®tres lors de l'appel de fonction est aussi fonctionnelle.
+
+
+Concernant la compilation des instructions, nous avons pu g√©rer le cas o√π le cond n'avait qu'une seule partie.
+
+Ensuite, concernant la compilation s√©par√©e, nous avons su placer les bons points de g√©n√©ration et reprendre notre code (pour placer les vecteurs de translation aux bons endroits). Nous avons aussi modifi√© les conditions d'arr√™t (uniquement pour programme) et les placements de bincond en tout d√©but de code (uniquement pour les programmes).
+
+R√©sum√©:
 
 Ce qui fonctionne:
-- Compilation des dÈclarations
+- Compilation des d√©clarations
 - Compilation des expressions
 - Compilation des instructions si, ttq, cond
-- Compilation des procÈdures
-- Compilation sÈparÈe (pas entiËrement)
+- Compilation des proc√©dures
+- Compilation s√©par√©e (pas enti√®rement)
 
 Ce qui ne fonctionne pas:
-- compilation sÈparÈe: on avait un problËme avec contMap, nous n'avons pas rÈussi ‡ l'implÈmenter correctement
+- compilation s√©par√©e: on avait un probl√®me avec contMap, nous n'avons pas r√©ussi √† l'impl√©menter correctement
 		
